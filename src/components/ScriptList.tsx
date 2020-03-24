@@ -68,7 +68,9 @@ const ScriptList: React.FC<Props> = ({ className, scripts, onViewClick }) => {
         >
           <ItemHeaderCol>
             <div>
-              <Name>{script.name}</Name>
+              <Name>
+                {script.name.length < 30 ? script.name : `${script.name.substring(0, 27)}...`}
+              </Name>
               <Type>{script.type}</Type>
             </div>
             <ViewButton onClick={(e) => handleViewClicked(e, script)}>View</ViewButton>

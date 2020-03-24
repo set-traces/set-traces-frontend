@@ -7,7 +7,7 @@ import { fetchProjects } from "./api/endpoints"
 
 function App() {
   return (
-    <div style={{ fontFamily: "arial" }}>
+    <div style={{ fontFamily: "arial", height: "100vh" }}>
       <Router>
         <Switch>
           <Route path={"/project/:projectId/:scriptId?"} component={ProjectPanel} />

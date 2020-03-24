@@ -15,19 +15,51 @@ interface Props extends RouteComponentProps<RouterParams> {}
 const Wrapper = styled.div`
   display: grid;
   background-color: #f8f9fa;
+  max-height: 100vh;
   grid-template-columns: 3fr 1fr;
-  grid-template-rows: auto;
-  grid-template-areas: "main rightSidebar";
+  grid-template-rows: 64px 1fr;
+  grid-template-areas:
+    "header header"
+    "main rightSidebar  ";
+
+  //overflow: hidden;
 `
 
 const StyledScriptList = styled(ScriptList)`
-  position: fixed;
+  //height: 30%;
+  overflow-y: scroll;
+  grid-area: rightSidebar;
 `
 
 const ScriptViewWrapper = styled.div`
+  padding-top: 1px;
+
+  grid-area: main;
+  justify-self: start;
+  width: 100%;
+
   display: flex;
   flex-direction: row;
   justify-content: center;
+  overflow-y: scroll;
+  //max-height: 100%;
+
+  &::-webkit-scrollbar-track {
+    //-webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    background-color: #f5f5f500;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    background-color: #f5f5f500;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    //-webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    background-color: ${(props) => props.theme.colors.undertone}55;
+  }
 `
 const StyledScriptView = styled(ScriptView)``
 
@@ -65,23 +97,21 @@ const ProjectPanel: React.FC<Props> = ({ history, match }) => {
 
   return (
     <Wrapper>
-      <div style={{ gridArea: "main" }}>
-        <h1>Project panel</h1>
+      <div style={{ gridArea: "header" }}>
+        <h1>{project ? project.title : "..."}</h1>
         {error}
-        {viewScript && (
-          <ScriptViewWrapper>
-            <StyledScriptView script={viewScript} />
-          </ScriptViewWrapper>
-        )}
       </div>
-      <div style={{ gridArea: "rightSidebar" }}>
-        {project && (
-          <StyledScriptList
-            scripts={project.scripts}
-            onViewClick={(script: Script) => history.push(`/project/${projectId}/${script.id}`)}
-          />
-        )}
-      </div>
+      {viewScript && (
+        <ScriptViewWrapper>
+          <StyledScriptView script={viewScript} />
+        </ScriptViewWrapper>
+      )}
+      {project && (
+        <StyledScriptList
+          scripts={project.scripts}
+          onViewClick={(script: Script) => history.push(`/project/${projectId}/${script.id}`)}
+        />
+      )}
     </Wrapper>
   )
 }
