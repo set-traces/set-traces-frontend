@@ -1,7 +1,8 @@
 import React from "react"
-import { Script, ScriptLineRemark } from "../api/dataTypes"
+import { Role as RoleType, Script, ScriptLineRemark } from "../api/dataTypes"
 import styled from "styled-components"
 import { SCRIPT_LINE_TYPE_ACTION } from "../api/testData"
+import { theme } from "../Theme"
 
 type Props = {
   className?: any
@@ -10,7 +11,11 @@ type Props = {
 
 const Wrapper = styled.div`
   box-shadow: 0px 0px 1px 1px rgba(214, 214, 214, 1);
-  padding: 0 10% 100px 10%;
+  //padding: 0 10% 100px 10%;
+  max-width: ${800 - 96 * 2}px;
+  padding-left: 96px;
+  padding-right: 96px;
+  padding-top: 96px;
   background-color: #fff;
 
   display: flex;
@@ -19,21 +24,31 @@ const Wrapper = styled.div`
 `
 
 const Title = styled.h1`
-  margin-top: 80px;
+  color: ${(props) => props.theme.colors.undertone};
+  margin-top: 0;
+  margin-bottom: 32px;
 `
 
-const Description = styled.h4``
+const Description = styled.span`
+  margin-bottom: 32px;
+`
 
-const RolesContainer = styled.div`
+const RolesMetaContainer = styled.div`
   display: flex;
   flex-direction: row;
-  margin-bottom: 30px;
+  padding-bottom: 24px;
+  margin-bottom: 48px;
+  border-bottom: 1px solid ${(props) => props.theme.colors.undertone};
 `
 
-const Role = styled.div`
-  background-color: ${(props) => props.theme.colors.highlight};
-  border-radius: 10px;
-  padding: 5px;
+const Role = styled.span<{ color: string }>`
+  //border-bottom: 2px solid ${(props) => props.color};
+  background-color: ${(props) => props.color};
+  padding: 2px;
+  border-radius: 3px;
+`
+
+const RolesMetaRole = styled(Role)`
   margin: 5px;
 `
 
@@ -42,23 +57,45 @@ const Line = styled.p`
   padding: 3px 0;
 `
 
+const COLOR_ALPHA = "aa"
+const ROLES_COLORS = [
+  theme.colors.undertone + COLOR_ALPHA,
+  theme.colors.negative + COLOR_ALPHA,
+  theme.colors.positive + COLOR_ALPHA,
+  theme.colors.negativeIsh + COLOR_ALPHA,
+  theme.colors.highlight + COLOR_ALPHA,
+]
+
 const ScriptView: React.FC<Props> = ({ className, script }) => {
+  const rolesColors: Record<RoleType, string> = {}
+  script.rolesMeta.forEach(
+    (roleMeta, i) => (rolesColors[roleMeta.role] = ROLES_COLORS[i % ROLES_COLORS.length]),
+  )
+
   return (
     <Wrapper className={className}>
       <Title>{script.name}</Title>
+      <RolesMetaRole color={"#00000000"}>
+        <strong>Context:</strong>
+      </RolesMetaRole>
       <Description>{script.description}</Description>
-      <RolesContainer>
+      <RolesMetaContainer>
+        <RolesMetaRole color={"#00000000"}>
+          <strong>Roles: </strong>
+        </RolesMetaRole>
         {script.rolesMeta.map((roleMeta, i) => (
-          <Role key={i}>{roleMeta.role}</Role>
+          <RolesMetaRole key={i} color={rolesColors[roleMeta.role]}>
+            {roleMeta.role}
+          </RolesMetaRole>
         ))}
-      </RolesContainer>
+      </RolesMetaContainer>
       {script.lines.map((line, i) => (
         <Line key={i}>
           {line.type === SCRIPT_LINE_TYPE_ACTION ? (
             `[${line.text}]`
           ) : (
             <span>
-              <strong>{line.role}</strong>: {line.text}
+              <Role color={rolesColors[line.role]}>{line.role}</Role>: {line.text}
             </span>
           )}
         </Line>

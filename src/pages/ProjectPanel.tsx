@@ -24,9 +24,12 @@ const StyledScriptList = styled(ScriptList)`
   position: fixed;
 `
 
-const StyledScriptView = styled(ScriptView)`
-  margin: 0 5%;
+const ScriptViewWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 `
+const StyledScriptView = styled(ScriptView)``
 
 const ProjectPanel: React.FC<Props> = ({ history, match }) => {
   const [project, setProject] = useState<Project | undefined>(undefined)
@@ -65,7 +68,11 @@ const ProjectPanel: React.FC<Props> = ({ history, match }) => {
       <div style={{ gridArea: "main" }}>
         <h1>Project panel</h1>
         {error}
-        {viewScript && <StyledScriptView script={viewScript} />}
+        {viewScript && (
+          <ScriptViewWrapper>
+            <StyledScriptView script={viewScript} />
+          </ScriptViewWrapper>
+        )}
       </div>
       <div style={{ gridArea: "rightSidebar" }}>
         {project && (

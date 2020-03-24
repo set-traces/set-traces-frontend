@@ -7,12 +7,14 @@ import { fetchProjects } from "./api/endpoints"
 
 function App() {
   return (
-    <Router>
-      <Switch>
-        <Route path={"/project/:projectId/:scriptId?"} component={ProjectPanel} />
-        <Route path={"/"} component={Console} />
-      </Switch>
-    </Router>
+    <div style={{ fontFamily: "arial" }}>
+      <Router>
+        <Switch>
+          <Route path={"/project/:projectId/:scriptId?"} component={ProjectPanel} />
+          <Route path={"/"} component={Console} />
+        </Switch>
+      </Router>
+    </div>
   )
 }
 

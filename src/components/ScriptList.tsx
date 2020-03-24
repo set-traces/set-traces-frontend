@@ -17,7 +17,8 @@ const List = styled.ol`
 const Item = styled.li`
   margin: 10px;
   padding: 10px;
-  background-color: #adadad;
+  border-top: 1px solid ${(props) => props.theme.colors.undertone};
+  //background-color: #adadad;
 `
 
 const ItemHeaderCol = styled.div`
@@ -31,7 +32,7 @@ const ViewButton = styled.button``
 const Name = styled.h3`
   padding-right: 100px;
   margin: 0;
-  color: ${(props) => props.theme.colors.highlight};
+  color: ${(props) => props.theme.colors.undertone};
 `
 const Type = styled.div``
 
@@ -51,6 +52,8 @@ const ScriptList: React.FC<Props> = ({ className, scripts, onViewClick }) => {
     },
     [onViewClick],
   )
+
+  console.log("Scripts: ", scripts)
 
   return (
     <List className={className}>
