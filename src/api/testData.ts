@@ -13,37 +13,46 @@ const scriptTypes: ScriptType[] = ["SKETCH", "SONG"]
 export const SCRIPT_LINE_TYPE_REMARK = "REMARK"
 export const SCRIPT_LINE_TYPE_ACTION = "ACTION"
 
+const fetchExampleScripts = async (): Promise<Script[]> =>
+  fetch("/example_scripts/all.json").then((res) => res.json())
+
 export const getTestProjects = (): Promise<Project[]> => {
-  return fetch("/SexToyStory.json")
-    .then((res) => res.json())
-    .then((scriptSexToyStory) => {
-      const scetchIds = ["1", "2", "3"]
+  return fetchExampleScripts()
+    .then((scripts: Script[]) => {
+      console.log("scripts:", scripts)
+      return scripts
+    })
+    .then((scripts) => {
       const projectsData: Project[] = [
         {
           id: "0",
           title: "Push Pop Baluba",
           description: "Første Abakusrevy!",
-          scripts: scetchIds.map((id) => ({ ...scriptSexToyStory, id: id })),
+          scripts: [...scripts],
         },
         {
           id: "1",
           title: "Solidarisk",
           description: "Nazi revy",
-          scripts: scetchIds.map((id) => ({ ...scriptSexToyStory, id: id })),
+          scripts: [...scripts],
         },
         {
           id: "2",
           title: "Kult!",
           description: "Den var kul ass",
-          scripts: scetchIds.map((id) => ({ ...scriptSexToyStory, id: id })),
+          scripts: [...scripts],
         },
         {
           id: "3",
           title: "Satte Spor",
           description: "Blessed by dusken. Blessed by the lazer",
-          scripts: scetchIds.map((id) => ({ ...scriptSexToyStory, id: id })),
+          scripts: [...scripts],
         },
       ]
       return projectsData
+    })
+    .catch((err) => {
+      console.error("Error", err)
+      return []
     })
 }
