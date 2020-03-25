@@ -26,25 +26,25 @@ export const getTestProjects = (): Promise<Project[]> => {
       const projectsData: Project[] = [
         {
           id: "0",
-          title: "Push Pop Baluba",
+          name: "Push Pop Baluba",
           description: "Første Abakusrevy!",
           scripts: [...scripts],
         },
         {
           id: "1",
-          title: "Solidarisk",
+          name: "Solidarisk",
           description: "Nazi revy",
           scripts: [...scripts],
         },
         {
           id: "2",
-          title: "Kult!",
+          name: "Kult!",
           description: "Den var kul ass",
           scripts: [...scripts],
         },
         {
           id: "3",
-          title: "Satte Spor",
+          name: "Satte Spor",
           description: "Blessed by dusken. Blessed by the lazer",
           scripts: [...scripts],
         },
