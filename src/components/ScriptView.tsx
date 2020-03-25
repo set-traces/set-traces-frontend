@@ -1,24 +1,27 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { Role as RoleType, Script, ScriptLineRemark } from "../api/dataTypes"
 import styled from "styled-components"
 import { SCRIPT_LINE_TYPE_ACTION } from "../api/testData"
 import { theme } from "../Theme"
+import { useWindowEvent } from "../hooks/windowCallbacks"
+import { useInterval } from "../hooks/timing"
 
 type Props = {
   className?: any
   script: Script
 }
 
-const Wrapper = styled.div``
+const Wrapper = styled.div`
+  //margin-bottom: 100px;
+`
 
 const BackgroundPaper = styled.div`
   background-color: #fff;
   box-shadow: 0px 0px 1px 1px rgba(214, 214, 214, 1);
   //padding: 0 10% 100px 10%;
-  max-width: ${800 - 96 * 2}px;
-  padding-left: 96px;
-  padding-right: 96px;
-  padding-top: 96px;
+  width: ${800 - 96 * 2}px;
+  min-width: 400px;
+  padding: 96px;
 
   display: flex;
   flex-direction: column;
@@ -39,6 +42,7 @@ const Description = styled.span`
 const RolesMetaContainer = styled.div`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   padding-bottom: 24px;
   margin-bottom: 48px;
   border-bottom: 1px solid ${(props) => props.theme.colors.undertone};
@@ -60,6 +64,11 @@ const Line = styled.p`
   padding: 3px 0;
 `
 
+const Cursor = styled.span`
+  border-left: 2px solid red;
+  position: marker;
+`
+
 const COLOR_ALPHA = "aa"
 const ROLES_COLORS = [
   theme.colors.undertone + COLOR_ALPHA,
@@ -69,11 +78,69 @@ const ROLES_COLORS = [
   theme.colors.highlight + COLOR_ALPHA,
 ]
 
+type CursorPos = {
+  lineIndex: number
+  characterIndex: number
+}
+
 const ScriptView: React.FC<Props> = ({ className, script }) => {
   const rolesColors: Record<RoleType, string> = {}
+  const [cursorPos, setCursorPos] = useState<CursorPos | null>({ lineIndex: 0, characterIndex: 0 })
+  const [showCursor, setShowCursor] = useState<boolean>(true)
+
+  useWindowEvent(
+    "keydown",
+    (e: KeyboardEvent) => {
+      const addCharcaterIndex: number =
+        (e.key === "ArrowRight" ? 1 : 0) + (e.key === "ArrowLeft" ? -1 : 0)
+      const addLineIndex: number = (e.key === "ArrowDown" ? 1 : 0) + (e.key === "ArrowUp" ? -1 : 0)
+
+      const newCursorPos = cursorPos
+        ? {
+            lineIndex: cursorPos.lineIndex + addLineIndex,
+            characterIndex: cursorPos.characterIndex + addCharcaterIndex,
+          }
+        : { lineIndex: 0, characterIndex: 0 }
+
+      setCursorPos(newCursorPos)
+    },
+    [],
+  )
+
+  // useInterval(() => setShowCursor(!showCursor), 500)
+
   script.rolesMeta.forEach(
     (roleMeta, i) => (rolesColors[roleMeta.role] = ROLES_COLORS[i % ROLES_COLORS.length]),
   )
+
+  const linesElements = script.lines.map((line, i) => {
+    const textElem =
+      showCursor && cursorPos && cursorPos.lineIndex === i ? (
+        <span>
+          <span>{line.text.substring(0, cursorPos.characterIndex)}</span>
+          <Cursor />
+          <span>{line.text.substring(cursorPos.characterIndex)}</span>
+        </span>
+      ) : (
+        <span>{line.text}</span>
+      )
+
+    return (
+      <Line key={i}>
+        {line.type === SCRIPT_LINE_TYPE_ACTION ? (
+          <span>
+            <span>[</span>
+            {textElem}
+            <span>]</span>
+          </span>
+        ) : (
+          <span>
+            <Role color={rolesColors[line.role]}>{line.role}</Role>: {textElem}
+          </span>
+        )}
+      </Line>
+    )
+  })
 
   return (
     <Wrapper className={className}>
@@ -93,17 +160,7 @@ const ScriptView: React.FC<Props> = ({ className, script }) => {
             </RolesMetaRole>
           ))}
         </RolesMetaContainer>
-        {script.lines.map((line, i) => (
-          <Line key={i}>
-            {line.type === SCRIPT_LINE_TYPE_ACTION ? (
-              `[${line.text}]`
-            ) : (
-              <span>
-                <Role color={rolesColors[line.role]}>{line.role}</Role>: {line.text}
-              </span>
-            )}
-          </Line>
-        ))}
+        {linesElements}
       </BackgroundPaper>
     </Wrapper>
   )
