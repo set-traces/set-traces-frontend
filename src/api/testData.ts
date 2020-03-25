@@ -18,10 +18,6 @@ const fetchExampleScripts = async (): Promise<Script[]> =>
 
 export const getTestProjects = (): Promise<Project[]> => {
   return fetchExampleScripts()
-    .then((scripts: Script[]) => {
-      console.log("scripts:", scripts)
-      return scripts
-    })
     .then((scripts) => {
       const projectsData: Project[] = [
         {
