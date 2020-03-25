@@ -41,7 +41,7 @@ const ProjectBox: React.FC<Props> = ({className, project, onClick}) =>  {
   return (
     <Wrapper className={className} onClick={() => onClick && onClick(project)}>
       <Title>
-        {project.title}
+        {project.name}
       </Title>
       <hr/>
       <Description>

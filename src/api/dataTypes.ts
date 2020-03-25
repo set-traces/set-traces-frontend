@@ -34,7 +34,7 @@ export type Script = {
 
 export type Project = {
   id: string
-  title: string
+  name: string
   description: string
   scripts: Script[]
 }

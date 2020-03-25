@@ -86,7 +86,7 @@ const ProjectPanel: React.FC<Props> = ({ history, match }) => {
   return (
     <Wrapper>
       <div style={{ gridArea: "header" }}>
-        <h1>{project ? project.title : "..."}</h1>
+        <h1>{project ? project.name : "..."}</h1>
         {error}
       </div>
       {viewScript && (
