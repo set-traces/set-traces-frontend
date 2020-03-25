@@ -9,18 +9,21 @@ type Props = {
   script: Script
 }
 
-const Wrapper = styled.div`
+const Wrapper = styled.div``
+
+const BackgroundPaper = styled.div`
+  background-color: #fff;
   box-shadow: 0px 0px 1px 1px rgba(214, 214, 214, 1);
   //padding: 0 10% 100px 10%;
   max-width: ${800 - 96 * 2}px;
   padding-left: 96px;
   padding-right: 96px;
   padding-top: 96px;
-  background-color: #fff;
 
   display: flex;
   flex-direction: column;
-  font-family: "Arial";
+  font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+  //font-size: 11px;
 `
 
 const Title = styled.h1`
@@ -74,32 +77,34 @@ const ScriptView: React.FC<Props> = ({ className, script }) => {
 
   return (
     <Wrapper className={className}>
-      <Title>{script.name}</Title>
-      <RolesMetaRole color={"#00000000"}>
-        <strong>Context:</strong>
-      </RolesMetaRole>
-      <Description>{script.description}</Description>
-      <RolesMetaContainer>
+      <BackgroundPaper>
+        <Title>{script.name}</Title>
         <RolesMetaRole color={"#00000000"}>
-          <strong>Roles: </strong>
+          <strong>Context:</strong>
         </RolesMetaRole>
-        {script.rolesMeta.map((roleMeta, i) => (
-          <RolesMetaRole key={i} color={rolesColors[roleMeta.role]}>
-            {roleMeta.role}
+        <Description>{script.description}</Description>
+        <RolesMetaContainer>
+          <RolesMetaRole color={"#00000000"}>
+            <strong>Roles: </strong>
           </RolesMetaRole>
+          {script.rolesMeta.map((roleMeta, i) => (
+            <RolesMetaRole key={i} color={rolesColors[roleMeta.role]}>
+              {roleMeta.role}
+            </RolesMetaRole>
+          ))}
+        </RolesMetaContainer>
+        {script.lines.map((line, i) => (
+          <Line key={i}>
+            {line.type === SCRIPT_LINE_TYPE_ACTION ? (
+              `[${line.text}]`
+            ) : (
+              <span>
+                <Role color={rolesColors[line.role]}>{line.role}</Role>: {line.text}
+              </span>
+            )}
+          </Line>
         ))}
-      </RolesMetaContainer>
-      {script.lines.map((line, i) => (
-        <Line key={i}>
-          {line.type === SCRIPT_LINE_TYPE_ACTION ? (
-            `[${line.text}]`
-          ) : (
-            <span>
-              <Role color={rolesColors[line.role]}>{line.role}</Role>: {line.text}
-            </span>
-          )}
-        </Line>
-      ))}
+      </BackgroundPaper>
     </Wrapper>
   )
 }
