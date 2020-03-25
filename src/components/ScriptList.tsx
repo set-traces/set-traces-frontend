@@ -5,7 +5,8 @@ import styled from "styled-components"
 type Props = {
   className?: string
   scripts: Script[]
-  onViewClick?: (script: Script) => void
+  selectedScriptId?: string
+  onClick?: (script: Script) => void
 }
 
 const List = styled.ol`
@@ -14,69 +15,45 @@ const List = styled.ol`
   padding: 0;
 `
 
-const Item = styled.li`
+const Item = styled.li<{ highlight?: boolean }>`
   margin: 10px;
   padding: 10px;
-  border-top: 1px solid ${(props) => props.theme.colors.undertone};
-  //background-color: #adadad;
-`
+  cursor: pointer;
+  border-top: 1px solid ${(props) => props.theme.colors.dark}33;
+  background-color: ${(props) => (props.highlight ? props.theme.colors.highlight : null)};
 
-const ItemHeaderCol = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
 `
 
-const ViewButton = styled.button``
-
 const Name = styled.h3`
-  padding-right: 100px;
   margin: 0;
   color: ${(props) => props.theme.colors.undertone};
 `
 const Type = styled.div``
 
-const Description = styled.p`
-  color: ${(props) => props.theme.colors.dark};
-`
-
-const ScriptList: React.FC<Props> = ({ className, scripts, onViewClick }) => {
-  const [expandedItemId, setExpandedItemId] = useState<string | undefined>(undefined)
-
-  const handleViewClicked = useCallback(
+const ScriptList: React.FC<Props> = ({ className, scripts, selectedScriptId, onClick }) => {
+  const handleClicked = useCallback(
     (e: MouseEvent, script: Script) => {
-      if (onViewClick) {
-        onViewClick(script)
+      if (onClick) {
+        onClick(script)
       }
       e.stopPropagation()
     },
-    [onViewClick],
+    [onClick],
   )
-
-  console.log("Scripts: ", scripts)
 
   return (
     <List className={className}>
       {scripts.map((script) => (
-        <Item
-          key={script.id}
-          onClick={() =>
-            expandedItemId === script.id
-              ? setExpandedItemId(undefined)
-              : setExpandedItemId(script.id)
-          }
-        >
-          <ItemHeaderCol>
-            <div>
-              <Name>
-                {script.name.length < 30 ? script.name : `${script.name.substring(0, 27)}...`}
-              </Name>
-              <Type>{script.type}</Type>
-            </div>
-            <ViewButton onClick={(e) => handleViewClicked(e, script)}>View</ViewButton>
-          </ItemHeaderCol>
-
-          <Description hidden={expandedItemId !== script.id}>{script.description}</Description>
+        <Item key={script.id} onClick={(e) => handleClicked(e, script)}>
+          <div>
+            <Name>
+              {script.name.length < 30 ? script.name : `${script.name.substring(0, 27)}...`}
+            </Name>
+          </div>
+          <Type>{script.type}</Type>
         </Item>
       ))}
     </List>
