@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from "react"
-import { Role as RoleType, Script, ScriptLineRemark } from "../api/dataTypes"
+import React from "react"
+import { Role as RoleType, Script } from "../api/dataTypes"
 import styled from "styled-components"
 import { SCRIPT_LINE_TYPE_ACTION } from "../api/testData"
 import { theme } from "../Theme"
-import { useWindowEvent } from "../hooks/windowCallbacks"
-import { useInterval } from "../hooks/timing"
 
 type Props = {
   className?: any
@@ -78,90 +76,53 @@ const ROLES_COLORS = [
   theme.colors.highlight + COLOR_ALPHA,
 ]
 
-type CursorPos = {
-  lineIndex: number
-  characterIndex: number
-}
-
 const ScriptView: React.FC<Props> = ({ className, script }) => {
   const rolesColors: Record<RoleType, string> = {}
-  const [cursorPos, setCursorPos] = useState<CursorPos | null>({ lineIndex: 0, characterIndex: 0 })
-  const [showCursor, setShowCursor] = useState<boolean>(true)
-
-  useWindowEvent(
-    "keydown",
-    (e: KeyboardEvent) => {
-      const addCharcaterIndex: number =
-        (e.key === "ArrowRight" ? 1 : 0) + (e.key === "ArrowLeft" ? -1 : 0)
-      const addLineIndex: number = (e.key === "ArrowDown" ? 1 : 0) + (e.key === "ArrowUp" ? -1 : 0)
-
-      const newCursorPos = cursorPos
-        ? {
-            lineIndex: cursorPos.lineIndex + addLineIndex,
-            characterIndex: cursorPos.characterIndex + addCharcaterIndex,
-          }
-        : { lineIndex: 0, characterIndex: 0 }
-
-      setCursorPos(newCursorPos)
-    },
-    [],
-  )
-
-  // useInterval(() => setShowCursor(!showCursor), 500)
 
   script.rolesMeta.forEach(
     (roleMeta, i) => (rolesColors[roleMeta.role] = ROLES_COLORS[i % ROLES_COLORS.length]),
   )
 
-  const linesElements = script.lines.map((line, i) => {
-    const textElem =
-      showCursor && cursorPos && cursorPos.lineIndex === i ? (
+  const linesElements = script.lines.map((line, i) => (
+    <Line key={i}>
+      {line.type === SCRIPT_LINE_TYPE_ACTION ? (
         <span>
-          <span>{line.text.substring(0, cursorPos.characterIndex)}</span>
-          <Cursor />
-          <span>{line.text.substring(cursorPos.characterIndex)}</span>
+          <span>[</span>
+          {line.text}
+          <span>]</span>
         </span>
       ) : (
-        <span>{line.text}</span>
-      )
+        <span>
+          <Role color={rolesColors[line.role]}>{line.role}</Role>: {line.text}
+        </span>
+      )}
+    </Line>
+  ))
 
-    return (
-      <Line key={i}>
-        {line.type === SCRIPT_LINE_TYPE_ACTION ? (
-          <span>
-            <span>[</span>
-            {textElem}
-            <span>]</span>
-          </span>
-        ) : (
-          <span>
-            <Role color={rolesColors[line.role]}>{line.role}</Role>: {textElem}
-          </span>
-        )}
-      </Line>
-    )
-  })
+  const contentElem = (
+    <span>
+      <Title>{script.name}</Title>
+      <RolesMetaRole color={"#00000000"}>
+        <strong>Context:</strong>
+      </RolesMetaRole>
+      <Description>{script.description}</Description>
+      <RolesMetaContainer>
+        <RolesMetaRole color={"#00000000"}>
+          <strong>Roles: </strong>
+        </RolesMetaRole>
+        {script.rolesMeta.map((roleMeta, i) => (
+          <RolesMetaRole key={i} color={rolesColors[roleMeta.role]}>
+            {roleMeta.role}
+          </RolesMetaRole>
+        ))}
+      </RolesMetaContainer>
+      {linesElements}
+    </span>
+  )
 
   return (
     <Wrapper className={className}>
-      <BackgroundPaper>
-        <Title>{script.name}</Title>
-        <RolesMetaRole color={"#00000000"}>
-          <strong>Context:</strong>
-        </RolesMetaRole>
-        <Description>{script.description}</Description>
-        <RolesMetaContainer>
-          <RolesMetaRole color={"#00000000"}>
-            <strong>Roles: </strong>
-          </RolesMetaRole>
-          {script.rolesMeta.map((roleMeta, i) => (
-            <RolesMetaRole key={i} color={rolesColors[roleMeta.role]}>
-              {roleMeta.role}
-            </RolesMetaRole>
-          ))}
-        </RolesMetaContainer>
-        {linesElements}
-      </BackgroundPaper>
+      <BackgroundPaper>{contentElem}</BackgroundPaper>
     </Wrapper>
   )
 }

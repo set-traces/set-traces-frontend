@@ -5,6 +5,7 @@ import { fetchProjects } from "../api/endpoints"
 import { RouteComponentProps } from "react-router-dom"
 import ScriptList from "../components/ScriptList"
 import ScriptView from "../components/ScriptView"
+import ScriptEditor from "../components/ScriptEditor"
 
 type RouterParams = {
   projectId: string
@@ -91,7 +92,7 @@ const ProjectPanel: React.FC<Props> = ({ history, match }) => {
       </div>
       {viewScript && (
         <ScriptViewWrapper>
-          <StyledScriptView script={viewScript} />
+          <ScriptEditor script={viewScript} key={viewScript.id} />
         </ScriptViewWrapper>
       )}
       {project && (
