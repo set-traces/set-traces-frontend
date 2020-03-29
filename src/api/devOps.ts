@@ -1,12 +1,7 @@
 
 export const getBaseUrl = (): String => {
-
-    console.log(process.env.NODE_ENV);
-
     const protocol: String = getProtocol();
     const backend: String = getBackend();
-    console.log(backend)
-    console.log(protocol)
     return `${protocol}${backend}`
 }
 
