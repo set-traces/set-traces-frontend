@@ -1,4 +1,5 @@
 import { Project, Script, ScriptType } from "./dataTypes"
+import { getBaseUrl } from './devOps'
 // import fs from "fs"
 // import path from "path"
 //
@@ -17,7 +18,8 @@ export const SCRIPT_LINE_TYPE_ACTION = "ACTION"
 //   fetch("/example_scripts/all.json").then((res) => res.json())
 
 const fetchAllProjects = async(): Promise<Project[]> => {
-    return fetch("http://localhost:8080/project/").then((res) => res.json())
+    let url: RequestInfo = getBaseUrl() + "/api/project/";
+    return fetch(url).then((res) => res.json())
 }
 
 export const getProjects = (): Promise<Project[]> => {
