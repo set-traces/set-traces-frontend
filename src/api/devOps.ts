@@ -19,16 +19,13 @@ const getProtocol = (): String => {
         let userDefinedBackend: any = localStorage.getItem("backendUrl")
         if (userDefinedBackend !== null) returnBackend = userDefinedBackend
         let protoColOptions: String[] = protocolOptionsString.split(" ")
-        console.log("setting default protocol from .env")
         defProt = protoColOptions[returnBackend]
     } else {
-        console.log("setting hard coded protocol")
         defProt = "https://"
     }
     
     let userDefinedProtocol: any = localStorage.getItem('protocol')
     if (userDefinedProtocol === null) return defProt
-    console.log("returning the consen protocol");
     return userDefinedProtocol
 }
 
