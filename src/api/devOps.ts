@@ -7,7 +7,7 @@ export const getBaseUrl = (): String => {
     const backend: String = getBackend();
     console.log(backend)
     console.log(protocol)
-    return "http://localhost:8080"
+    return `${protocol}${backend}`
 }
 
 const getProtocol = (): String => {
