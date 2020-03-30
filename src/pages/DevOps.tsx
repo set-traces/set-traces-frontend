@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react"
 import styled from "styled-components"
 import { setBackend, setProtocol, getBackend, getProtocol } from './../api/devOps'
 import { RouteComponentProps, withRouter } from "react-router-dom"
+import {getUrl} from './../api/devOps'
 
 interface Props extends RouteComponentProps {
   
@@ -9,7 +10,12 @@ interface Props extends RouteComponentProps {
 
 const Wrapper = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  margin: 2em;
+`
+
+const Col = styled.div`
+  width: 100%;
 `
 
 const PageRow = styled.div`
@@ -56,6 +62,8 @@ const Saved = styled.div`
   padding-right: 4em;
 `
 
+const Message = styled.p``
+
 const updateBackend = (inp: string, setter: any, setProt: any, saved: any) => {
   setter(inp)
   setBackend(parseInt(inp))
@@ -75,14 +83,22 @@ const DevOps: React.FC<Props> = ({ history }) => {
 
 
   const saved = () => {
+    setOperational("loading...")
     setShowSaved(true)
     setTimeout(() => {
       setShowSaved(false)
     }, 1000)
+    testBackend()
+  }
+
+  const testBackend = () => {
+    fetch(getUrl('/api/version')).then((r: Response) => r.json()).then(r => setOperational("System fully operational")).catch(err => setOperational("System failed"))
   }
 
   const [backends, setBackends] = useState<string[]>([])
   const [protocols, setProcotols] = useState<string[]>([])
+
+  const [operational, setOperational] = useState<string>("loading")
 
   const [showSaved, setShowSaved] = useState<boolean>(false)
 
@@ -91,7 +107,7 @@ const DevOps: React.FC<Props> = ({ history }) => {
 
   useEffect(() => {
     //fetchProjects().then(setProjects)
-
+    testBackend()
     setSelectedProtocol(getProtocol())
     
     const options: any = process.env.REACT_APP_BACKEND_OPTIONS
@@ -123,20 +139,28 @@ const DevOps: React.FC<Props> = ({ history }) => {
 
   return (
     <Wrapper>
-      <DevOpsTitle>DevOps Tools</DevOpsTitle>
-      <Backend>
-        {showSaved ? <Saved><h3>Lagret</h3></Saved> : null}
-        <Header>
-          Velg backend
-        </Header>
-        <Selection onChange={(e: any) => {updateBackend(e.target.value, setSelectedBackend, setSelectedProtocol, saved)}} value={selectedBackend}>
-          {backendOptions}
-        </Selection>
-        <Header>Velg protocol</Header>
-        <Selection onChange={(e: any) => {updateProtocols(e.target.value, setSelectedProtocol, saved)}} value={selectedProtocol}>
-          {protocolOptions}
-        </Selection>
-      </Backend>
+      <Col>
+        <DevOpsTitle>DevOps Tools</DevOpsTitle>
+        <Backend>
+          {showSaved ? <Saved><h3>Lagret</h3></Saved> : null}
+          <Header>
+            Velg backend
+          </Header>
+          <Selection onChange={(e: any) => {updateBackend(e.target.value, setSelectedBackend, setSelectedProtocol, saved)}} value={selectedBackend}>
+            {backendOptions}
+          </Selection>
+          <Header>Velg protocol</Header>
+          <Selection onChange={(e: any) => {updateProtocols(e.target.value, setSelectedProtocol, saved)}} value={selectedProtocol}>
+            {protocolOptions}
+          </Selection>
+        </Backend>
+      </Col>
+      <Col>
+        <DevOpsTitle>Helth</DevOpsTitle>
+        <Message>
+          {operational}
+        </Message>
+      </Col>
     </Wrapper>
   )
 }
