@@ -156,7 +156,7 @@ const DevOps: React.FC<Props> = ({ history }) => {
         </Backend>
       </Col>
       <Col>
-        <DevOpsTitle>Helth</DevOpsTitle>
+        <DevOpsTitle>Health</DevOpsTitle>
         <Message>
           {operational}
         </Message>
