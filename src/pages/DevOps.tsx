@@ -92,7 +92,9 @@ const DevOps: React.FC<Props> = ({ history }) => {
   }
 
   const testBackend = () => {
-    fetch(getUrl('/api/version')).then((r: Response) => r.json()).then(r => setOperational("System fully operational")).catch(err => setOperational("System failed"))
+    setTimeout(() => { // added so user easier can see backend reposne under health
+      fetch(getUrl('/api/version')).then((r: Response) => r.json()).then(r => setOperational("System fully operational")).catch(err => setOperational("System failed"))
+    }, 1000)
   }
 
   const [backends, setBackends] = useState<string[]>([])
