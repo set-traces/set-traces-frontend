@@ -1,7 +1,6 @@
 import React from "react"
-import { Role as RoleType, Script } from "../api/dataTypes"
+import { Role as RoleType, Script, ScriptLineType } from "../api/dataTypes"
 import styled from "styled-components"
-import { SCRIPT_LINE_TYPE_ACTION } from "../api/testData"
 import { theme } from "../Theme"
 
 type Props = {
@@ -83,21 +82,20 @@ const ScriptView: React.FC<Props> = ({ className, script }) => {
     (roleMeta, i) => (rolesColors[roleMeta.role] = ROLES_COLORS[i % ROLES_COLORS.length]),
   )
 
-  const linesElements = script.lines.map((line, i) => (
-    <Line key={i}>
-      {line.type === SCRIPT_LINE_TYPE_ACTION ? (
-        <span>
-          <span>[</span>
-          {line.text}
-          <span>]</span>
-        </span>
-      ) : (
-        <span>
-          <Role color={rolesColors[line.role]}>{line.role}</Role>: {line.text}
-        </span>
-      )}
-    </Line>
-  ))
+  const linesElements = script.lines.map((line, i) => {
+    switch (line.type) {
+      case ScriptLineType.ACTION:
+        return <p>[${line.text}]</p>
+      case ScriptLineType.REMARK:
+        return (
+          <span>
+            <Role color={rolesColors[line.role]}>{line.role}</Role>: {line.text}
+          </span>
+        )
+      case ScriptLineType.COMMENT:
+        return <span>{line.text}</span>
+    }
+  })
 
   const contentElem = (
     <span>

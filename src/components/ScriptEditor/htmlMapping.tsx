@@ -1,8 +1,7 @@
-import { SCRIPT_LINE_TYPE_ACTION } from "../../api/testData"
 import React, { ReactElement } from "react"
 import styled, { AnyStyledComponent } from "styled-components"
 import { theme } from "../../Theme"
-import { Role as RoleType, Script } from "../../api/dataTypes"
+import { Role as RoleType, Script, ScriptLineType } from "../../api/dataTypes"
 
 const Title = styled.h1`
   color: ${(props) => props.theme.colors.undertone};
@@ -68,17 +67,20 @@ const SCstr = (scElem: AnyStyledComponent, props: any = {}): ((elemType: string)
 }
 
 const htmlMapping = (script: Script, rolesColors: Record<RoleType, string>): ReactElement => {
-  const linesElements = script.lines.map((line, i) => (
-    <Line key={i}>
-      {line.type === SCRIPT_LINE_TYPE_ACTION ? (
-        <p>[${line.text}]</p>
-      ) : (
-        <span>
-          <Role color={rolesColors[line.role]}>{line.role}</Role>: {line.text}
-        </span>
-      )}
-    </Line>
-  ))
+  const linesElements = script.lines.map((line, i) => {
+    switch (line.type) {
+      case ScriptLineType.ACTION:
+        return <p>[${line.text}]</p>
+      case ScriptLineType.REMARK:
+        return (
+          <span>
+            <Role color={rolesColors[line.role]}>{line.role}</Role>: {line.text}
+          </span>
+        )
+      case ScriptLineType.COMMENT:
+        return <span>{line.text}</span>
+    }
+  })
 
   const contentElems = (
     <span>

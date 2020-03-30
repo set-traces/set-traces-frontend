@@ -37,20 +37,23 @@ const StyledScriptList = styled(ScriptList)`
 
 const ScriptViewWrapper = styled.div`
   padding-top: 1px;
-
   grid-area: main;
   justify-self: start;
   width: 100%;
+  box-sizing: border-box;
 
   display: flex;
-  flex-direction: row;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   overflow-y: scroll;
   //max-height: 100%;
 
   ${(props) => props.theme.scrollbarStyling}
 `
-const StyledScriptView = styled(ScriptView)``
+const StyledScriptEditor = styled(ScriptEditor)`
+  width: 100%;
+  box-sizing: border-box;
+`
 
 const ProjectPanel: React.FC<Props> = ({ history, match }) => {
   const [project, setProject] = useState<Project | undefined>(undefined)
@@ -92,7 +95,7 @@ const ProjectPanel: React.FC<Props> = ({ history, match }) => {
       </div>
       {viewScript && (
         <ScriptViewWrapper>
-          <ScriptEditor script={viewScript} key={viewScript.id} />
+          <StyledScriptEditor script={viewScript} key={viewScript.id} />
         </ScriptViewWrapper>
       )}
       {project && (

@@ -30,7 +30,7 @@ export type ScriptLineComment = {
   text: string
 }
 
-export type ScriptLine = ScriptLineRemark | ScriptLineAction
+export type ScriptLine = ScriptLineRemark | ScriptLineAction | ScriptLineComment
 
 export type Script = {
   id: string
