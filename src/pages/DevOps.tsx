@@ -48,18 +48,18 @@ const Option = styled.option`
 
 const Saved = styled.div`
   position: absolute;
-  top: 16%;
+  top: 8%;
   left: 50%;
   transform: translate(-50%, -50%);
   background: #2a882a;
   /* width: 400px; */
   /* height: 200px; */
-  padding: 2em;
+  padding: 0em;
   border-radius: 5px;
   border: 2px solid #005d00;
   color: white;
-  padding-left: 4em;
-  padding-right: 4em;
+  padding-left: 2em;
+  padding-right: 2em;
 `
 
 const Message = styled.p``
