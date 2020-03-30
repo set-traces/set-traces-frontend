@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react"
 import styled from "styled-components"
 import { setBackend, setProtocol, getBackend, getProtocol } from './../api/devOps'
-import { RouteComponentProps } from "react-router-dom"
+import { RouteComponentProps, withRouter } from "react-router-dom"
 
-interface Props extends RouteComponentProps {}
+interface Props extends RouteComponentProps {
+  
+}
 
 const Wrapper = styled.div`
   display: flex;
@@ -139,4 +141,4 @@ const DevOps: React.FC<Props> = ({ history }) => {
   )
 }
 
-export default DevOps
+export default withRouter(DevOps)

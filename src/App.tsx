@@ -14,7 +14,9 @@ function App() {
       <Router>
         <Switch>
           <Route path={"/project/:projectId/:scriptId?"} component={ProjectPanel} />
-          <Route path={"/devops"} component={DevOps} />
+          <Route path={"/devops"}>
+            <DevOps />
+          </Route>
           <Route path={"/"} component={Console} />
         </Switch>
       </Router>

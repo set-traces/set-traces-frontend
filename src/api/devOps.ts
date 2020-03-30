@@ -1,4 +1,9 @@
 
+export const getUrl = (extension: string): string => {
+    const base = getBaseUrl()
+    return `${base}${extension}`
+}
+
 export const getBaseUrl = (): string => {
     const protocol: string = getProtocol();
     const backend: string = getBackend();
