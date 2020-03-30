@@ -1,5 +1,3 @@
-import { SCRIPT_LINE_TYPE_ACTION, SCRIPT_LINE_TYPE_REMARK } from "./testData"
-
 export type ScriptType = string
 export type Role = string
 export type Actor = string
@@ -9,15 +7,26 @@ export type RoleMeta = {
   actor: Actor
 }
 
+export enum ScriptLineType {
+  REMARK = "REMARK",
+  ACTION = "ACTION",
+  COMMENT = "COMMENT",
+}
+
 export type ScriptLineRemark = {
-  type: typeof SCRIPT_LINE_TYPE_REMARK
+  type: typeof ScriptLineType.REMARK
   role: Role
   text: string
 }
 
 export type ScriptLineAction = {
-  type: typeof SCRIPT_LINE_TYPE_ACTION
+  type: typeof ScriptLineType.ACTION
   roles: Role[]
+  text: string
+}
+
+export type ScriptLineComment = {
+  type: typeof ScriptLineType.COMMENT
   text: string
 }
 

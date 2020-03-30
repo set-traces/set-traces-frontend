@@ -10,9 +10,6 @@ import { Project, Script, ScriptType } from "./dataTypes"
 
 const scriptTypes: ScriptType[] = ["SKETCH", "SONG"]
 
-export const SCRIPT_LINE_TYPE_REMARK = "REMARK"
-export const SCRIPT_LINE_TYPE_ACTION = "ACTION"
-
 const fetchExampleScripts = async (): Promise<Script[]> =>
   fetch("/example_scripts/all.json").then((res) => res.json())
 
