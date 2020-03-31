@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react"
 import styled from "styled-components"
 import ProjectBox from "../components/ProjectBox"
-import { RouteComponentProps } from "react-router-dom"
+import { RouteComponentProps, BrowserRouter as Router, Route, Link } from "react-router-dom"
 import { Project } from "../api/dataTypes"
 import { fetchProjects } from "../api/endpoints"
+import NewProject from './../components/NewProject'
 
 interface Props extends RouteComponentProps {}
 
@@ -39,8 +40,10 @@ const Console: React.FC<Props> = ({ history }) => {
 
   return (
     <Wrapper>
+      <Route path={"/newProject"} component={NewProject} />
       Console
       <PageRow>Something</PageRow>
+      <PageRow><Link to={'/newProject'}>Create new project</Link></PageRow>
       <PageRow>
         Projects
         <ProjectsContainer>
