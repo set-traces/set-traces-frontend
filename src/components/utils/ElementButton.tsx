@@ -1,42 +1,15 @@
-import React, { ReactElement } from 'react'
+
+import React from 'react'
 import styled from 'styled-components'
-import {Link} from 'react-router-dom'
 
-type buttonStyle = {
-    color: string,
-    borderColor: string
-}
-
-type btnTypes = {
-    [key: string]: buttonStyle
-}
-
-type Props = {
-    className?: any,
-    to: string,
-    children?: string
-    type: string
-}
-
-const buttonStyleOptions: btnTypes = {
-    'danger': {
-        color: 'red',
-        borderColor: 'green'
-    }
-}
-
-let buttonStyles = {
-    'danger-button': {
-        color: 'yellow',
-        borderColor: 'green'
-    }
-}
 
 let topAndBottomPadding: string = '.5em'
 
-const Button = styled(Link)`
+const Button = styled.button`
     position:relative;
     top: ${topAndBottomPadding};
+    cursor: pointer;
+    font-size: 1em;
     padding: 1em;
     padding-top: ${topAndBottomPadding};
     padding-bottom: ${topAndBottomPadding};

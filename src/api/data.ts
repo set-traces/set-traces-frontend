@@ -1,5 +1,6 @@
 import { Project, Script, ScriptType } from "./dataTypes"
 import { getBaseUrl } from './devOps'
+import { post } from "./network"
 // import fs from "fs"
 // import path from "path"
 //
@@ -32,6 +33,12 @@ export const getProjects = (): Promise<Project[]> => {
         return []
     })
 }
+
+export const createProject = (name: string, description: string): Promise<any> => {
+    return post('/api/project/', {name, description})
+}
+
+
 
 // export const getTestProjects = (): Promise<Project[]> => {
 //   return fetchExampleScripts()
