@@ -39,7 +39,7 @@ export const createProject = (name: string, description: string): Promise<any> =
 }
 
 export const createScript = (projectId: string, name: string, description: string): Promise<any> => {
-    return post(`/api/project/${projectId}/script/`, {name, description}
+    return post(`/api/project/${projectId}/script/`, {name, description})
 }
 
 
