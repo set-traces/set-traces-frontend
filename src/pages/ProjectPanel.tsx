@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react"
 import styled from "styled-components"
 import { Project, Script } from "../api/dataTypes"
 import { fetchProjects } from "../api/endpoints"
-import { RouteComponentProps } from "react-router-dom"
+import { RouteComponentProps, Route } from "react-router-dom"
 import ScriptList from "../components/ScriptList"
 import ScriptView from "../components/ScriptView"
+import {GreenButton} from './../components/utils/LinkButton'
+import NewSketch from "../components/NewSketch"
 
 type RouterParams = {
   projectId: string
@@ -51,6 +53,26 @@ const ScriptViewWrapper = styled.div`
 `
 const StyledScriptView = styled(ScriptView)``
 
+const HeaderWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`
+
+const NewSketchButtonWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`
+
+const NewSketchButton = styled(GreenButton)`
+  position: absolute;
+  top: 40%;
+  right: 1em;
+  transform: translate(0, -50%);
+  box-sizing: boder-box;
+  width: fit-content;
+`
+
+
 const ProjectPanel: React.FC<Props> = ({ history, match }) => {
   const [project, setProject] = useState<Project | undefined>(undefined)
   const [error, setError] = useState<string | undefined>(undefined)
@@ -82,25 +104,32 @@ const ProjectPanel: React.FC<Props> = ({ history, match }) => {
       }
     }
   }, [match.params.scriptId, project, viewScriptId])
-
   return (
-    <Wrapper>
-      <div style={{ gridArea: "header" }}>
-        <h1>{project ? project.name : "..."}</h1>
-        {error}
-      </div>
-      {viewScript && (
-        <ScriptViewWrapper>
-          <StyledScriptView script={viewScript} />
-        </ScriptViewWrapper>
-      )}
-      {project && (
-        <StyledScriptList
-          scripts={project.scripts}
-          onClick={(script: Script) => history.push(`/project/${projectId}/${script.id}`)}
-        />
-      )}
-    </Wrapper>
+    <div>
+      <Route path={'/project/:projectId/newSketch'}>
+        {project ? project.scriptTypes?<NewSketch projectId={projectId} types={project.scriptTypes} />:null:null}
+      </Route>
+      <Wrapper>
+        <div style={{ gridArea: "header" }}>
+          <div style={{display: 'flex'}}>
+            <HeaderWrapper><h1>{project ? project.name : "..."}</h1></HeaderWrapper>
+            <NewSketchButtonWrapper><NewSketchButton to={`/project/${projectId}/newSketch`}>Ny sketch</NewSketchButton></NewSketchButtonWrapper>
+          </div>
+          {error}
+        </div>
+        {viewScript && (
+          <ScriptViewWrapper>
+            <StyledScriptView script={viewScript} />
+          </ScriptViewWrapper>
+        )}
+        {project && (
+          <StyledScriptList
+            scripts={project.scripts}
+            onClick={(script: Script) => history.push(`/project/${projectId}/${script.id}`)}
+          />
+        )}
+      </Wrapper>
+    </div>
   )
 }
 

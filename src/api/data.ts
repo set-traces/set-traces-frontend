@@ -38,6 +38,10 @@ export const createProject = (name: string, description: string): Promise<any> =
     return post('/api/project/', {name, description})
 }
 
+export const createScript = (projectId: string, name: string, description: string): Promise<any> => {
+    return post(`/api/project/${projectId}/script/`, {name, description}
+}
+
 
 
 // export const getTestProjects = (): Promise<Project[]> => {
