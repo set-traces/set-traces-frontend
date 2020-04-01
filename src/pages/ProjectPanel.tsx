@@ -50,8 +50,9 @@ const ScriptViewWrapper = styled.div`
 
   ${(props) => props.theme.scrollbarStyling}
 `
+
 const StyledScriptEditor = styled(ScriptEditor)`
-  width: 100%;
+  //width: 100%;
   box-sizing: border-box;
 `
 
