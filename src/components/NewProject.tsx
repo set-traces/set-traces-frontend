@@ -1,27 +1,21 @@
-import React, {useState, cloneElement} from "react";
-import styled, { ThemeProps , keyframes } from "styled-components";
-import Modal from "./Modal";
-import {DangerButton} from './utils/LinkButton'
-import {GreenButton} from './utils/ElementButton'
-import { create } from "domain";
-import {createProject} from './../api/data'
-import { Redirect } from "react-router-dom";
+import React, { useState, useEffect, cloneElement, useRef } from "react"
+import styled, { ThemeProps, keyframes } from "styled-components"
+import Modal from "./Modal"
+import { DangerButton } from "./utils/LinkButton"
+import { GreenButton } from "./utils/ElementButton"
+import { createProject } from "./../api/data"
+import { Redirect } from "react-router-dom"
+import {useInterval} from './utils/useInterval'
 
 type Props = {
   className?: string
 }
 
-const Wrapper = styled.div`
-  
-`
+const Wrapper = styled.div``
 
-const Title = styled.h3`
-  
-`
+const Title = styled.h3``
 
-const Description = styled.div`
-
-`
+const Description = styled.div``
 
 const Header = styled.h1`
   margin: 0;
@@ -35,15 +29,13 @@ const LLabel = styled.label`
   color: ${(props) => props.theme.colors.negativeIsh};
 `
 
-const LabelWrapper = styled.div`
-  
-`
+const LabelWrapper = styled.div``
 
 const IInput = styled.input`
-  margin-top: .1em;
-  margin-bottom: .5em;
+  margin-top: 0.1em;
+  margin-bottom: 0.5em;
   border-radius: 5px;
-  padding: .5em;
+  padding: 0.5em;
   border: none;
   font-size: 1.1em;
   color: ${(props) => props.theme.colors.undertone};
@@ -53,27 +45,40 @@ const IInput = styled.input`
   }
 `
 
-const Label = (props: { children: React.ReactNode; }) => {
-  return <LabelWrapper>
-    <LLabel>{props.children}:</LLabel>
-  </LabelWrapper>
+const Label = (props: { children: React.ReactNode }) => {
+  return (
+    <LabelWrapper>
+      <LLabel>{props.children}:</LLabel>
+    </LabelWrapper>
+  )
 }
 
 const InputWrapper = styled.div`
   margin: 2em 0 2em 0;
 `
 
-const Input = (props: { name: string; type: string | undefined; value: string | number | string[] | undefined; onChange: ((event: React.ChangeEvent<HTMLInputElement>) => void) | undefined; style: any }) => {
-  return <InputWrapper style={props.style}>
-    <Label>
-      {props.name}
-    </Label>
-    <IInput type={props.type} style={props.style} placeholder={props.name} value={props.value} onChange={props.onChange} />
-  </InputWrapper>
+const Input = (props: {
+  name: string
+  type: string | undefined
+  value: string | number | string[] | undefined
+  onChange: ((event: React.ChangeEvent<HTMLInputElement>) => void) | undefined
+  style: any
+}) => {
+  return (
+    <InputWrapper style={props.style}>
+      <Label>{props.name}</Label>
+      <IInput
+        type={props.type}
+        style={props.style}
+        placeholder={props.name}
+        value={props.value}
+        onChange={props.onChange}
+      />
+    </InputWrapper>
+  )
 }
 
 const Loading = () => {
-
   const rotate360 = keyframes`
     from {
       transform: rotate(0deg);
@@ -82,7 +87,7 @@ const Loading = () => {
       transform: rotate(360deg);
     }
 `
-  
+
   const LoadingWrapper = styled.div`
     position: absolute;
     left: 50%;
@@ -101,15 +106,15 @@ const Loading = () => {
     height: 85px;
     border-radius: 50%;
   `
-  
-  return <div style={{padding: '2em'}}>
-    <LoadingWrapper>
-      <LoadingAnimation>
-      </LoadingAnimation>
-    </LoadingWrapper>
-  </div>
-}
 
+  return (
+    <div style={{ padding: "2em" }}>
+      <LoadingWrapper>
+        <LoadingAnimation></LoadingAnimation>
+      </LoadingWrapper>
+    </div>
+  )
+}
 
 const ErrorBody = styled.div`
   text-align: center;
@@ -118,55 +123,95 @@ const ErrorBody = styled.div`
   font-size: 2em;
 `
 
+const StyledCountDown = styled.div<{ width: number }>`
+  width: ${(props) => props.width}%;
+  height: 2px;
+  background: #fff;
+  margin: auto;
+  margin-top: 2em;
+`
+
+const CountDown = (props: any) => {
+  return <StyledCountDown width={props.width} />
+}
+
+
+
 const Error = (props: any): any => {
-  console.log("e")
+  
+  const [w, sw] = useState(100)
+  
+  useInterval(() => {
+    sw(w-1)
+  }, 15)
+  console.log(w)
   if (props.showError) {
-    return <ErrorBody>
-      Det skjedde en feil
-    </ErrorBody>
+    return <div>
+      <ErrorBody>Det skjedde en feil</ErrorBody>
+      <CountDown width={w} />
+    </div>
   }
   return null
 }
 
-const NewProject: React.FC<Props> = ({className}) =>  {
+const InnerModal = (props: any): any => {
+  return (
+    <div>
+      <Header>New Project</Header>
+      <div></div>
+      <div>
+        <Input
+          type={"text"}
+          name={"Name"}
+          style={{}}
+          value={props.name}
+          onChange={(e) => {
+            props.setName(e.target.value)
+          }}
+        />
+        <Input
+          type={"text"}
+          name={"Description"}
+          style={{ width: "100%", boxSizing: "border-box" }}
+          value={props.desc}
+          onChange={(e) => {
+            props.setDesc(e.target.value)
+          }}
+        />
+      </div>
+      <div>
+        <DangerButton to={"/"}>Lukk</DangerButton>
+        <GreenButton onClick={props.create}>Lagre</GreenButton>
+      </div>
+    </div>
+  )
+}
 
-  const [name, setName] = useState('')
-  const [desc, setDesc] = useState('') 
+const NewProject: React.FC<Props> = ({ className }) => {
+  const [name, setName] = useState("")
+  const [desc, setDesc] = useState("")
 
   const [isLoading, setLoading] = useState(false)
   const [isError, setError] = useState(false)
   const [redirectProject, setRedirectProject] = useState(null)
 
   const create = (e: any) => {
-    createProject(name, desc).then(r => {
-      if (r.status !== 200) {
-        throw "error"
-      }
-      setRedirectProject(r.data.id)
-      return r
-    }).catch(err => {
-      console.log(err)
-      setLoading(false)
-      setError(true)
-      setTimeout(() => {
-        setError(false)
-      }, 2500) // 2.5 seconds
-    })
-  }
-
-  const InnerModal = (props: any): any => {
-    return <div>
-      <Header>New Project</Header>
-      <div></div>
-      <div>
-        <Input type={'text'} name={'Name'} style={{}} value={name} onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => {setName(e.target.value)}} />
-        <Input type={'text'} name={'Description'} style={{width: '100%', boxSizing: 'border-box'}} value={desc} onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => {setDesc(e.target.value)}} />
-      </div>
-      <div>
-        <DangerButton to={'/'}>Lukk</DangerButton>
-        <GreenButton onClick={create}>Lagre</GreenButton>
-      </div>
-    </div>
+    createProject(name, desc)
+      .then((r) => {
+        if (r.status !== 200) {
+          throw "error"
+        }
+        setRedirectProject(r.data.id)
+        return r
+      })
+      .catch((err) => {
+        console.log(err)
+        setLoading(false)
+        setError(true)
+        setTimeout(() => {
+          setError(false)
+        }, 1500) // 2.5 seconds
+      })
   }
 
   if (redirectProject !== null) {
@@ -176,8 +221,20 @@ const NewProject: React.FC<Props> = ({className}) =>  {
 
   return (
     <Modal>
-      {isLoading ? <Loading  /> : isError ? <Error showError={isError} /> : <InnerModal key={'modal'} />}
-      
+      {isLoading ? (
+        <Loading />
+      ) : isError ? (
+        <Error showError={isError} />
+      ) : (
+        <InnerModal
+          key={"modal"}
+          create={create}
+          name={name}
+          setName={setName}
+          desc={desc}
+          setDesc={setDesc}
+        />
+      )}
     </Modal>
   )
 }
