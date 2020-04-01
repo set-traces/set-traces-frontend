@@ -6,6 +6,7 @@ import { GreenButton } from "./utils/ElementButton"
 import { createScript } from "./../api/data"
 import { Redirect, RouteComponentProps } from "react-router-dom"
 import { useInterval } from "./utils/useInterval"
+import { prependOnceListener } from "cluster"
 
 type RouterParams = {
     projectId: string
@@ -142,6 +143,20 @@ const StyledCountDown = styled.div<{ width: number }>`
   margin-top: 2em;
 `
 
+const Select = styled.select`
+    width: 100%;
+    padding: 1em;
+    color: ${(props) => props.theme.colors.undertone};
+    border: 2px solid ${(props) => props.theme.colors.negativeIsh};
+    margin: 0em;
+    margin-top: .1em;
+    font-size: 1.3em;
+`
+
+const Option = styled.option`
+
+`
+
 const CountDown = (props: any) => {
   return <StyledCountDown width={props.width} />
 }
@@ -165,6 +180,9 @@ const Error = (props: any): any => {
 }
 
 const InnerModal = (props: any): any => {
+    const typeOptions = props.types.map((type: { id: string; name: string }) => {
+        return <Option value={type.id}>{type.name}</Option>
+    })
   return (
     <div>
       <Header>New Sketch</Header>
@@ -179,9 +197,10 @@ const InnerModal = (props: any): any => {
             props.setName(e.target.value)
           }}
         />
-        <select>
-          <option>En</option>
-        </select>
+        <Label>Type</Label>
+        <Select value={props.selectedType} onChange={(e) => {props.setSelectedType(e.target.value)}}>
+          {typeOptions}
+        </Select>
         <Input
           type={"text"}
           name={"Description"}
@@ -193,7 +212,7 @@ const InnerModal = (props: any): any => {
         />
       </div>
       <div>
-        <DangerButton to={"/"}>Lukk</DangerButton>
+        <DangerButton to={`/project/${props.projectId}`}>Lukk</DangerButton>
         <GreenButton onClick={props.create}>Lagre</GreenButton>
       </div>
     </div>
@@ -204,6 +223,7 @@ const NewSketch: React.FC<Props> = ({ projectId, types }) => {
   
   const [name, setName] = useState("")
   const [desc, setDesc] = useState("")
+  const [selectedType, setSelectedType] = useState("")
 
   const [isLoading, setLoading] = useState(false)
   const [isError, setError] = useState(false)
@@ -247,6 +267,10 @@ const NewSketch: React.FC<Props> = ({ projectId, types }) => {
           setName={setName}
           desc={desc}
           setDesc={setDesc}
+          selectedType={selectedType}
+          setSelectedType={setSelectedType}
+          types = {types}
+          projectId={projectId}
         />
       )}
     </Modal>
