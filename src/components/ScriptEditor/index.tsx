@@ -1,5 +1,11 @@
 import React, { useState } from "react"
-import { Role as RoleType, Script, ScriptLineType } from "../../api/dataTypes"
+import {
+  Role as RoleType,
+  RoleMeta,
+  Script,
+  ScriptLineRemark,
+  ScriptLineType,
+} from "../../api/dataTypes"
 import { BackgroundPaper, Wrapper, ScriptHeader, Role } from "./elements"
 import Draft, {
   CompositeDecorator,
@@ -9,9 +15,17 @@ import Draft, {
   EditorState,
   ContentBlock,
   genKey,
+  DraftEntityMutability,
+  CharacterMetadata,
 } from "draft-js"
 import styled from "styled-components"
 import { theme } from "../../Theme"
+import { createArrayOfRange } from "../../utils/arrayUtils"
+import {
+  createEditorStateFromScript,
+  createRoleEntities,
+  createScriptLinesBlocks,
+} from "./contentModification"
 
 type Props = {
   className?: string
@@ -27,59 +41,14 @@ const ROLES_COLORS = [
   theme.colors.highlight + COLOR_ALPHA,
 ]
 
-const roleDecorator: DraftDecorator = {
-  strategy: (contentBlock, callback, contentState) => {
-    const text = contentBlock.getText()
-
-    if (text.includes(":")) {
-      callback(0, text.indexOf(":"))
-    }
-  },
-  component: Role,
-}
-
-const compositDecorator = new CompositeDecorator([roleDecorator])
-
-let initialEditorState = EditorState.createEmpty(compositDecorator)
-const contentState = initialEditorState.getCurrentContent()
-
 const ScriptEditor: React.FC<Props> = ({ className, script }) => {
   const rolesColors: Record<RoleType, string> = {}
-  script.rolesMeta.forEach(
-    (roleMeta, i) => (rolesColors[roleMeta.role] = ROLES_COLORS[i % ROLES_COLORS.length]),
-  )
-
-  const scriptContentBlockArray: ContentBlock[] = script.lines
-    .map((line): ContentBlock[] => {
-      switch (line.type) {
-        case ScriptLineType.REMARK:
-          return [
-            new ContentBlock({
-              key: genKey(),
-              type: "unstyled",
-              text: line.role + ": ",
-              data: { color: rolesColors[line.role] },
-            }),
-            new ContentBlock({
-              key: genKey(),
-              type: "unstyled",
-              text: line.text,
-            }),
-          ]
-        default:
-          return [new ContentBlock({ key: genKey(), type: "unstyled", text: line.text })]
-      }
-    })
-    .flatMap((contentBlockArray) => contentBlockArray)
-
-  // .contentState.createEntity("role", "mutable", { color })
+  script.rolesMeta.forEach((roleMeta, i) => {
+    rolesColors[roleMeta.role] = ROLES_COLORS[i % ROLES_COLORS.length]
+  })
 
   const [editorState, setEditorState] = useState<EditorState>(
-    EditorState.push(
-      initialEditorState,
-      ContentState.createFromBlockArray(new Array<ContentBlock>(...scriptContentBlockArray)),
-      "insert-characters",
-    ),
+    createEditorStateFromScript(script, rolesColors),
   )
 
   const handleEditorChange = (editorState: EditorState) => {

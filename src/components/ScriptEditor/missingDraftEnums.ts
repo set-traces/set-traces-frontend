@@ -1,0 +1,16 @@
+export enum EditorChangeType {
+  adjustDepth = "adjust-depth",
+  applyEntity = "apply-entity",
+  backspaceCharacter = "backspace-character",
+  changeBlockData = "change-block-data",
+  changeBlockType = "change-block-type",
+  changeInlineStyle = "change-inline-style",
+  deleteCharacters = "delete-character",
+  insertCharacters = "insert-characters",
+  insertFragment = "insert-fragment",
+  redo = "redo",
+  removeRange = "remove-range",
+  spellcheckChange = "spellcheck-change",
+  splitBlock = "split-block",
+  undo = "undo",
+}

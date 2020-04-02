@@ -1,6 +1,7 @@
 import styled from "styled-components"
 import React from "react"
 import { Role as RoleType, Script } from "../../api/dataTypes"
+import { DraftDecoratorComponentProps } from "./missingDraftTypes"
 
 export const Wrapper = styled.div`
   //width: 100%;
@@ -39,9 +40,21 @@ export const RolesMetaContainer = styled.div`
   margin-bottom: 48px;
   border-bottom: 1px solid ${(props) => props.theme.colors.undertone};
 `
-export const Role = styled.span<{ color?: string }>`
+
+type RoleProps = DraftDecoratorComponentProps
+export const InlineRole = styled.span<RoleProps>`
+  //border-bottom: 2px solid ${(props) => props.color};
+  //background-color: ${(props) => props.color || "#8888ff"};
+  background-color: ${(props) =>
+    props.entityKey ? props.contentState.getEntity(props.entityKey).getData().color : "red"};
+  padding: 2px;
+  border-radius: 3px;
+`
+
+export const Role = styled.span<{ color: string }>`
   //border-bottom: 2px solid ${(props) => props.color};
   background-color: ${(props) => props.color || "#8888ff"};
+
   padding: 2px;
   border-radius: 3px;
 `
