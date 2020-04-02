@@ -65,6 +65,10 @@ export const changeScriptName = (projectId: string, scriptId: string, name: stri
   return put(`/api/project/${projectId}/script/${scriptId}/name/`, { name })
 }
 
+export const updateDescription = (projectId: string, scriptId: string, description: string) => {
+  return put(`/api/project/${projectId}/script/${scriptId}/description/`, { description })
+}
+
 // export const getTestProjects = (): Promise<Project[]> => {
 //   return fetchExampleScripts()
 //     .then((scripts: Script[]) => {

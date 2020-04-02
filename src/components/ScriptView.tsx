@@ -5,7 +5,7 @@ import { SCRIPT_LINE_TYPE_ACTION } from "../api/testData"
 import { theme } from "../Theme"
 import { useWindowEvent } from "../hooks/windowCallbacks"
 import { useInterval } from "../hooks/timing"
-import { saveScriptName } from "../api/endpoints"
+import { saveScriptName, saveScriptDescription } from "../api/endpoints"
 
 type Props = {
   className?: any
@@ -109,16 +109,31 @@ const ScriptTitle = (props: any) => {
   }
 }
 
+const ScriptDescription = (props: any) => {
+  if (!props.edit) {
+    return <Description onClick={() => {props.setEditDesc(true)}}>{props.description}</Description>
+  } else {
+    return <textarea autoFocus value={props.description} onChange={props.onChange} />
+  }
+}
+
 const ScriptView: React.FC<Props> = ({ className, projectId, script }) => {
   const rolesColors: Record<RoleType, string> = {}
   const [cursorPos, setCursorPos] = useState<CursorPos | null>({ lineIndex: 0, characterIndex: 0 })
   const [showCursor, setShowCursor] = useState<boolean>(true)
   const [editName, setEditName] = useState<boolean>(false)
+  const [editDesc, setEditDesc] = useState<boolean>(false)
+  const [desc, setDesc] = useState<string>(script.description)
   const [name, setName] = useState<string>(script.name)
 
   const saveName = () => {
     saveScriptName(projectId, script.id, name)
     console.log("saving name")
+  }
+
+  const saveDesc = () => {
+    saveScriptDescription(projectId, script.id, desc)
+    console.log("saving desc")
   }
 
   const changeToEditTitle = () => {
@@ -129,10 +144,13 @@ const ScriptView: React.FC<Props> = ({ className, projectId, script }) => {
     "keydown",
     (e: KeyboardEvent) => {
       if (e.key === "Enter") {
-        // handle for edit title
-        if (editName) {
+        if (editName) {// handle for edit title
           saveName()
           setEditName(false)
+        }
+        if (editDesc) {
+          saveDesc()
+          setEditDesc(false)
         }
       }
       const addCharcaterIndex: number =
@@ -201,7 +219,7 @@ const ScriptView: React.FC<Props> = ({ className, projectId, script }) => {
         <RolesMetaRole color={"#00000000"}>
           <strong>Context:</strong>
         </RolesMetaRole>
-        <Description>{script.description}</Description>
+        <ScriptDescription onChange={(e: any) => {setDesc(e.target.value)}} description={desc} edit={editDesc} setEditDesc={setEditDesc}/>
         <RolesMetaContainer>
           <RolesMetaRole color={"#00000000"}>
             <strong>Roles: </strong>
