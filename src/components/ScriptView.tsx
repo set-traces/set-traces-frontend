@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useRef } from "react"
 import { Role as RoleType, Script, ScriptLineRemark } from "../api/dataTypes"
 import styled from "styled-components"
 import { SCRIPT_LINE_TYPE_ACTION } from "../api/testData"
 import { theme } from "../Theme"
 import { useWindowEvent } from "../hooks/windowCallbacks"
 import { useInterval } from "../hooks/timing"
+import { saveScriptName } from "../api/endpoints"
 
 type Props = {
   className?: any
+  projectId: string
   script: Script
 }
 
@@ -33,6 +35,22 @@ const Title = styled.h1`
   color: ${(props) => props.theme.colors.undertone};
   margin-top: 0;
   margin-bottom: 32px;
+`
+
+const TitleInput = styled.input`
+  position: relative;
+  top: -3px;
+  left: -3px;
+  color: ${(props) => props.theme.colors.undertone};
+  margin-top: 0;
+  margin-bottom: 32px;
+  font-size: 2em;
+  font-weight: bold;
+  border-radius: 5px;
+  border: 2px solid ${(props) => props.theme.colors.undertone};
+  outline: none;
+  font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+  margin-bottom: 26px;
 `
 
 const Description = styled.span`
@@ -83,14 +101,40 @@ type CursorPos = {
   characterIndex: number
 }
 
-const ScriptView: React.FC<Props> = ({ className, script }) => {
+const ScriptTitle = (props: any) => {
+  if (!props.edit) {
+    return <Title onClick={props.changeToEditTitle}>{props.name}</Title>
+  } else {
+    return <TitleInput autoFocus value={props.name} onChange={props.onChange} />
+  }
+}
+
+const ScriptView: React.FC<Props> = ({ className, projectId, script }) => {
   const rolesColors: Record<RoleType, string> = {}
   const [cursorPos, setCursorPos] = useState<CursorPos | null>({ lineIndex: 0, characterIndex: 0 })
   const [showCursor, setShowCursor] = useState<boolean>(true)
+  const [editName, setEditName] = useState<boolean>(false)
+  const [name, setName] = useState<string>(script.name)
+
+  const saveName = () => {
+    saveScriptName(projectId, script.id, name)
+    console.log("saving name")
+  }
+
+  const changeToEditTitle = () => {
+    setEditName(true)
+  }
 
   useWindowEvent(
     "keydown",
     (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        // handle for edit title
+        if (editName) {
+          saveName()
+          setEditName(false)
+        }
+      }
       const addCharcaterIndex: number =
         (e.key === "ArrowRight" ? 1 : 0) + (e.key === "ArrowLeft" ? -1 : 0)
       const addLineIndex: number = (e.key === "ArrowDown" ? 1 : 0) + (e.key === "ArrowUp" ? -1 : 0)
@@ -145,7 +189,15 @@ const ScriptView: React.FC<Props> = ({ className, script }) => {
   return (
     <Wrapper className={className}>
       <BackgroundPaper>
-        <Title>{script.name}</Title>
+        <ScriptTitle
+          changeToEditTitle={changeToEditTitle}
+          name={name}
+          onChange={(e: any) => {
+            setName(e.target.value)
+          }}
+          edit={editName}
+          setEditName={setEditName}
+        />
         <RolesMetaRole color={"#00000000"}>
           <strong>Context:</strong>
         </RolesMetaRole>

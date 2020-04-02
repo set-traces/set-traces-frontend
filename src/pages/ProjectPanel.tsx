@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import styled, {keyframes} from "styled-components"
+import styled, { keyframes } from "styled-components"
 import { Project, Script } from "../api/dataTypes"
 import { fetchProjects, fetchProjectById } from "../api/endpoints"
 import { RouteComponentProps, Route, Redirect } from "react-router-dom"
@@ -117,23 +117,23 @@ const ProjectPanel: React.FC<Props> = ({ history, match }) => {
   const [viewScript, setViewScript] = useState<Script | undefined>(undefined)
 
   const [loading, setLoading] = useState<boolean>(false)
-  const [redirectScript, setRedirectScript] = useState<string | null>(null)
+  const [redirectScript, setRedirectScript] = useState<string | null>(null)
 
   const projectId: string = match.params.projectId
   const viewScriptId: string | undefined = match.params.scriptId
 
-
   const getProject = () => {
-    console.log('called')
-    return fetchProjectById(projectId).then((newProject: Project) => {
-      if (newProject) {
-        setLoading(false)
-        setProject(newProject)
-      } else {
-        setError("No projects found for the given id")
-      }
-    })
-    .catch((err) => setError(err.toString()))
+    console.log("called")
+    return fetchProjectById(projectId)
+      .then((newProject: Project) => {
+        if (newProject) {
+          setLoading(false)
+          setProject(newProject)
+        } else {
+          setError("No projects found for the given id")
+        }
+      })
+      .catch((err) => setError(err.toString()))
   }
 
   useEffect(() => {
@@ -156,7 +156,8 @@ const ProjectPanel: React.FC<Props> = ({ history, match }) => {
 
   const newSketch = () => {
     setLoading(true)
-    createScript(projectId, "Untitled", "", project!!.scriptTypes[0].id).then((r) => { // should send with defualt script type
+    createScript(projectId, "Untitled", "", project!!.scriptTypes[0].id).then((r) => {
+      // should send with defualt script type
       getProject().then(() => {
         history.push(`/project/${projectId}/${r.data.id}`)
       })
@@ -183,7 +184,7 @@ const ProjectPanel: React.FC<Props> = ({ history, match }) => {
         </div>
         {viewScript && (
           <ScriptViewWrapper>
-            <StyledScriptView script={viewScript} />
+            <StyledScriptView projectId={projectId} script={viewScript} />
           </ScriptViewWrapper>
         )}
         {project && (
