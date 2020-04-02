@@ -1,6 +1,7 @@
 import { Project, Script, ScriptType } from "./dataTypes"
-import { getBaseUrl } from './devOps'
+import { getBaseUrl, getUrl } from './devOps'
 import { post } from "./network"
+import axios from "axios"
 // import fs from "fs"
 // import path from "path"
 //
@@ -31,6 +32,17 @@ export const getProjects = (): Promise<Project[]> => {
         console.log('Got an error. TA DEG SAMMEN')
         console.debug('NÅ BLIR DET KAKTUS I POSTEN')
         return []
+    })
+}
+
+const fetchProject = (projectId: string): Promise<any> => {
+    return axios.get(getUrl(`/api/project/${projectId}`))
+}
+
+export const getProjectById = (projectId: string): Promise<Project> => {
+    return fetchProject(projectId).then(r => {
+        console.log(r)
+        return r.data
     })
 }
 

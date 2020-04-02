@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import styled, {keyframes} from "styled-components"
 import { Project, Script } from "../api/dataTypes"
-import { fetchProjects } from "../api/endpoints"
+import { fetchProjects, fetchProjectById } from "../api/endpoints"
 import { RouteComponentProps, Route, Redirect } from "react-router-dom"
 import ScriptList from "../components/ScriptList"
 import ScriptView from "../components/ScriptView"
@@ -122,17 +122,25 @@ const ProjectPanel: React.FC<Props> = ({ history, match }) => {
   const projectId: string = match.params.projectId
   const viewScriptId: string | undefined = match.params.scriptId
 
+
+  const getProject = () => {
+    console.log('called')
+    return fetchProjectById(projectId).then((newProject: Project) => {
+      if (newProject) {
+        setLoading(false)
+        setProject(newProject)
+      } else {
+        setError("No projects found for the given id")
+      }
+    })
+    .catch((err) => setError(err.toString()))
+  }
+
   useEffect(() => {
-    fetchProjects()
-      .then((projects) => {
-        const newProject: Project | undefined = projects.find((project) => project.id === projectId)
-        if (newProject) {
-          setProject(newProject)
-        } else {
-          setError("No projects found for the given id")
-        }
-      })
-      .catch((err) => setError(err.toString()))
+    // fetchProjects()
+    //   .then((projects) => {
+    //     const newProject: Project | undefined = projects.find((project) => project.id === projectId)
+    getProject()
   }, [match.params.projectId])
 
   useEffect(() => {
@@ -149,8 +157,9 @@ const ProjectPanel: React.FC<Props> = ({ history, match }) => {
   const newSketch = () => {
     setLoading(true)
     createScript(projectId, "Untitled", "", project!!.scriptTypes[0].id).then((r) => { // should send with defualt script type
-      setLoading(false)
-      history.push(`/project/${projectId}/${r.data.id}`)
+      getProject().then(() => {
+        history.push(`/project/${projectId}/${r.data.id}`)
+      })
     })
   }
 
