@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react"
-import styled from "styled-components"
+import styled, {keyframes} from "styled-components"
 import { Project, Script } from "../api/dataTypes"
 import { fetchProjects } from "../api/endpoints"
-import { RouteComponentProps, Route } from "react-router-dom"
+import { RouteComponentProps, Route, Redirect } from "react-router-dom"
 import ScriptList from "../components/ScriptList"
 import ScriptView from "../components/ScriptView"
-import {GreenButton} from './../components/utils/LinkButton'
+import { GreenButton } from "./../components/utils/ElementButton"
 import NewSketch from "../components/NewSketch"
+import { createScript } from "./../api/data"
 
 type RouterParams = {
   projectId: string
@@ -72,11 +73,51 @@ const NewSketchButton = styled(GreenButton)`
   width: fit-content;
 `
 
+const Loading = () => {
+  const rotate360 = keyframes`
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+`
+
+  const LoadingWrapper = styled.div`
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  `
+  const LoadingAnimation = styled.div`
+    animation: ${rotate360} 1s linear infinite;
+    transform: translateZ(0);
+    border-top: 13px solid ${(props: any) => props.theme.colors.positive};
+    border-right: 13px solid ${(props: any) => props.theme.colors.negative};
+    border-bottom: 13px solid ${(props: any) => props.theme.colors.highlight};
+    border-left: 13px solid ${(props: any) => props.theme.colors.negativeIsh};
+    background: transparent;
+    width: 85px;
+    height: 85px;
+    border-radius: 50%;
+  `
+
+  return (
+    <div style={{ padding: "2em" }}>
+      <LoadingWrapper>
+        <LoadingAnimation></LoadingAnimation>
+      </LoadingWrapper>
+    </div>
+  )
+}
 
 const ProjectPanel: React.FC<Props> = ({ history, match }) => {
   const [project, setProject] = useState<Project | undefined>(undefined)
   const [error, setError] = useState<string | undefined>(undefined)
   const [viewScript, setViewScript] = useState<Script | undefined>(undefined)
+
+  const [loading, setLoading] = useState<boolean>(false)
+  const [redirectScript, setRedirectScript] = useState<string | null>(null)
 
   const projectId: string = match.params.projectId
   const viewScriptId: string | undefined = match.params.scriptId
@@ -104,16 +145,30 @@ const ProjectPanel: React.FC<Props> = ({ history, match }) => {
       }
     }
   }, [match.params.scriptId, project, viewScriptId])
+
+  const newSketch = () => {
+    setLoading(true)
+    createScript(projectId, "Untitled", "", project!!.scriptTypes[0].id).then((r) => { // should send with defualt script type
+      setLoading(false)
+      history.push(`/project/${projectId}/${r.data.id}`)
+    })
+  }
+
+  if (loading) {
+    return <Loading />
+  }
+
   return (
     <div>
-      <Route path={'/project/:projectId/newSketch'}>
-        {project ? project.scriptTypes?<NewSketch projectId={projectId} types={project.scriptTypes} />:null:null}
-      </Route>
       <Wrapper>
         <div style={{ gridArea: "header" }}>
-          <div style={{display: 'flex'}}>
-            <HeaderWrapper><h1>{project ? project.name : "..."}</h1></HeaderWrapper>
-            <NewSketchButtonWrapper><NewSketchButton to={`/project/${projectId}/newSketch`}>Ny sketch</NewSketchButton></NewSketchButtonWrapper>
+          <div style={{ display: "flex" }}>
+            <HeaderWrapper>
+              <h1>{project ? project.name : "..."}</h1>
+            </HeaderWrapper>
+            <NewSketchButtonWrapper>
+              <NewSketchButton onClick={newSketch}>Ny sketch</NewSketchButton>
+            </NewSketchButtonWrapper>
           </div>
           {error}
         </div>

@@ -230,7 +230,7 @@ const NewSketch: React.FC<Props> = ({ projectId, types }) => {
   const [redirectProject, setRedirectProject] = useState(null)
 
   const create = (e: any) => {
-    createScript(projectId, name, desc)
+    createScript(projectId, name, desc, '')
       .then((r) => {
         if (r.status !== 200) {
           throw "error"
