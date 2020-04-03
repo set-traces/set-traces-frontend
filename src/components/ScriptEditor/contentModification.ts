@@ -19,9 +19,8 @@ import {
 } from "draft-js"
 import { createArrayOfRange } from "../../utils/arrayUtils"
 import { CharacterMetadataConfig } from "./missingDraftTypes"
-import { EditorChangeType } from "./missingDraftEnums"
 import { List } from "immutable"
-import { InlineRole, Role } from "./elements"
+import { InlineRole } from "./elements"
 
 type RolesEntityKeys = Record<RoleType, string>
 
@@ -43,7 +42,7 @@ export const createRoleEntities = (
   return rolesMeta.reduce((acc, roleMeta, i) => {
     const entityType = "ROLE"
     const roleColor = rolesColors[roleMeta.role]
-    const newContentState = acc.contentState.createEntity(entityType, "MUTABLE", {
+    const newContentState = acc.contentState.createEntity(entityType, "IMMUTABLE", {
       color: roleColor,
     })
     const entityKey = newContentState.getLastCreatedEntityKey()
@@ -79,6 +78,9 @@ const createRemarkBlock = (
     type: "paragraph",
     text: roleText + restText,
     characterList: List<CharacterMetadata>([...roleCharactersMetadata, ...restCharactersMetadata]),
+    data: {
+      scriptLineType: ScriptLineType.REMARK,
+    },
   })
 
   console.log(contentBlock)
@@ -91,6 +93,9 @@ const createActionBlock = (scriptLine: ScriptLineAction): ContentBlock => {
     key: genKey(),
     type: "paragraph",
     text: scriptLine.text,
+    data: {
+      scriptLineType: ScriptLineType.ACTION,
+    },
   })
 }
 
@@ -99,6 +104,9 @@ const createCommentBlock = (scriptLine: ScriptLineComment): ContentBlock => {
     key: genKey(),
     type: "paragraph",
     text: scriptLine.text,
+    data: {
+      scriptLineType: ScriptLineType.COMMENT,
+    },
   })
 }
 
@@ -123,13 +131,23 @@ export const createScriptLinesBlocks = (
   return scriptContentBlockArray
 }
 
+const getScriptLineType = (contentBlock: ContentBlock): ScriptLineType =>
+  (contentBlock.getData() as any).scriptLineType as ScriptLineType
+
 const roleDecorator: DraftDecorator = {
   strategy: (contentBlock, callback, contentState) => {
-    const text = contentBlock.getText()
-
-    if (text.includes(":")) {
-      callback(0, text.indexOf(":"))
+    if (getScriptLineType(contentBlock) !== ScriptLineType.REMARK) {
+      return
     }
+    contentBlock.findEntityRanges((charMetadata) => {
+      const entityKey = charMetadata.getEntity()
+      if (entityKey) {
+        const entityType = contentState.getEntity(entityKey).getType()
+        return entityType === "ROLE"
+      } else {
+        return false
+      }
+    }, callback)
   },
   component: InlineRole,
 }
@@ -140,21 +158,15 @@ export const createEditorStateFromScript = (
   script: Script,
   rolesColors: Record<RoleType, string>,
 ): EditorState => {
-  const emptyEditorState = EditorState.createEmpty(compositDecorator)
-  const { contentState: editorStateWithRoleEntities, roleEntityKeys } = createRoleEntities(
+  const { contentState: contentStateWithRoleEntities, roleEntityKeys } = createRoleEntities(
     script.rolesMeta,
-    emptyEditorState.getCurrentContent(),
+    new ContentState(),
     rolesColors,
   )
   const contentBlocks = createScriptLinesBlocks(script.lines, roleEntityKeys)
-  const a = EditorState.push(
-    emptyEditorState,
-    editorStateWithRoleEntities,
-    EditorChangeType.insertCharacters,
-  )
-  return EditorState.push(
-    a,
-    ContentState.createFromBlockArray(contentBlocks),
-    EditorChangeType.insertCharacters,
+
+  return EditorState.createWithContent(
+    ContentState.createFromBlockArray(contentBlocks, contentStateWithRoleEntities.getEntityMap()),
+    compositDecorator,
   )
 }
