@@ -25,6 +25,8 @@ import {
   createEditorStateFromScript,
   createRoleEntities,
   createScriptLinesBlocks,
+  RolesEntityKeys,
+  updateContentBlockEntities,
 } from "./contentModification"
 
 type Props = {
@@ -47,13 +49,21 @@ const ScriptEditor: React.FC<Props> = ({ className, script }) => {
     rolesColors[roleMeta.role] = ROLES_COLORS[i % ROLES_COLORS.length]
   })
 
-  const [editorState, setEditorState] = useState<EditorState>(
-    createEditorStateFromScript(script, rolesColors),
+  const [initialEditorState, initialRolesEntityKeys] = createEditorStateFromScript(
+    script,
+    rolesColors,
   )
+  const [editorState, setEditorState] = useState<EditorState>(initialEditorState)
+  const [rolesEntityKeys, setRolesEntityKeys] = useState<RolesEntityKeys>(initialRolesEntityKeys)
 
   const handleEditorChange = (editorState: EditorState) => {
-    setEditorState(editorState)
+    const editorStateWithNewEntities = updateContentBlockEntities(editorState, rolesEntityKeys)
+    setEditorState(editorStateWithNewEntities)
   }
+
+  // const customBlockRenderer = (contentBlock: ContentBlock) => {
+  //   const lineType =
+  // }
 
   return (
     <Wrapper className={className}>

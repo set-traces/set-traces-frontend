@@ -41,15 +41,15 @@ export const RolesMetaContainer = styled.div`
   border-bottom: 1px solid ${(props) => props.theme.colors.undertone};
 `
 
-type RoleProps = DraftDecoratorComponentProps
-export const InlineRole = styled.span<RoleProps>`
-  //border-bottom: 2px solid ${(props) => props.color};
-  //background-color: ${(props) => props.color || "#8888ff"};
+type RemarkLineProps = DraftDecoratorComponentProps
+export const InlineRole = styled.span<DraftDecoratorComponentProps>`
   background-color: ${(props) =>
     props.entityKey ? props.contentState.getEntity(props.entityKey).getData().color : "red"};
   padding: 2px;
   border-radius: 3px;
 `
+
+// export const RemarkLine: React.FC<RemarkLineProps> = () => {}
 
 export const Role = styled.span<{ color: string }>`
   //border-bottom: 2px solid ${(props) => props.color};

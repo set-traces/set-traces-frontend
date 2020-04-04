@@ -1,4 +1,5 @@
 import {
+  Role,
   Role as RoleType,
   RoleMeta,
   Script,
@@ -8,7 +9,7 @@ import {
   ScriptLineRemark,
   ScriptLineType,
 } from "../../api/dataTypes"
-import {
+import Draft, {
   CharacterMetadata,
   CompositeDecorator,
   ContentBlock,
@@ -16,13 +17,17 @@ import {
   DraftDecorator,
   EditorState,
   genKey,
+  SelectionState,
+  Modifier,
 } from "draft-js"
 import { createArrayOfRange } from "../../utils/arrayUtils"
 import { CharacterMetadataConfig } from "./missingDraftTypes"
-import { List } from "immutable"
+import { List, Map } from "immutable"
 import { InlineRole } from "./elements"
+import * as scriptLineHandling from "./scriptLineHandling"
+import { EditorChangeType } from "./missingDraftEnums"
 
-type RolesEntityKeys = Record<RoleType, string>
+export type RolesEntityKeys = Record<RoleType, string>
 
 type ContentStateWithRoleEntityKeys = {
   contentState: ContentState
@@ -42,7 +47,7 @@ export const createRoleEntities = (
   return rolesMeta.reduce((acc, roleMeta, i) => {
     const entityType = "ROLE"
     const roleColor = rolesColors[roleMeta.role]
-    const newContentState = acc.contentState.createEntity(entityType, "IMMUTABLE", {
+    const newContentState = acc.contentState.createEntity(entityType, "MUTABLE", {
       color: roleColor,
     })
     const entityKey = newContentState.getLastCreatedEntityKey()
@@ -61,10 +66,11 @@ const createCharacterMetadataOfLength = (
 const createRemarkBlock = (
   scriptLine: ScriptLineRemark,
   rolesEntityKeys: RolesEntityKeys,
+  key: string,
 ): ContentBlock => {
   const roleEntityKey = rolesEntityKeys[scriptLine.role]
   const roleText = scriptLine.role
-  const restText = ": " + scriptLine.text
+  const restText = scriptLineHandling.lineRemarkRoleSeparator + scriptLine.text
   const roleCharactersMetadata = createCharacterMetadataOfLength(
     {
       entity: roleEntityKey,
@@ -74,40 +80,55 @@ const createRemarkBlock = (
   const restCharactersMetadata = createCharacterMetadataOfLength(undefined, restText.length)
 
   const contentBlock = new ContentBlock({
-    key: genKey(),
+    key: key,
     type: "paragraph",
     text: roleText + restText,
     characterList: List<CharacterMetadata>([...roleCharactersMetadata, ...restCharactersMetadata]),
-    data: {
+    data: Map({
       scriptLineType: ScriptLineType.REMARK,
-    },
+    }),
   })
-
-  console.log(contentBlock)
 
   return contentBlock
 }
 
-const createActionBlock = (scriptLine: ScriptLineAction): ContentBlock => {
+const createActionBlock = (scriptLine: ScriptLineAction, key: string): ContentBlock => {
   return new ContentBlock({
-    key: genKey(),
+    key: key,
     type: "paragraph",
     text: scriptLine.text,
-    data: {
+    data: Map({
       scriptLineType: ScriptLineType.ACTION,
-    },
+    }),
   })
 }
 
-const createCommentBlock = (scriptLine: ScriptLineComment): ContentBlock => {
+const createCommentBlock = (scriptLine: ScriptLineComment, key: string): ContentBlock => {
   return new ContentBlock({
-    key: genKey(),
+    key: key,
     type: "paragraph",
     text: scriptLine.text,
-    data: {
+    data: Map({
       scriptLineType: ScriptLineType.COMMENT,
-    },
+    }),
   })
+}
+
+export const createScriptLineBlock = (
+  scriptLine: ScriptLine,
+  rolesEntityKeys: RolesEntityKeys,
+  key: string,
+): ContentBlock => {
+  switch (scriptLine.type) {
+    case ScriptLineType.REMARK:
+      return createRemarkBlock(scriptLine, rolesEntityKeys, key)
+    case ScriptLineType.ACTION:
+      return createActionBlock(scriptLine, key)
+    case ScriptLineType.COMMENT:
+      return createCommentBlock(scriptLine, key)
+    default:
+      return new ContentBlock()
+  }
 }
 
 export const createScriptLinesBlocks = (
@@ -116,29 +137,21 @@ export const createScriptLinesBlocks = (
 ): ContentBlock[] => {
   const scriptContentBlockArray: ContentBlock[] = scriptLines.map(
     (line): ContentBlock => {
-      switch (line.type) {
-        case ScriptLineType.REMARK:
-          return createRemarkBlock(line, rolesEntityKeys)
-        case ScriptLineType.ACTION:
-          return createActionBlock(line)
-        case ScriptLineType.COMMENT:
-          return createCommentBlock(line)
-        default:
-          return new ContentBlock()
-      }
+      return createScriptLineBlock(line, rolesEntityKeys, genKey())
     },
   )
   return scriptContentBlockArray
 }
 
 const getScriptLineType = (contentBlock: ContentBlock): ScriptLineType =>
-  (contentBlock.getData() as any).scriptLineType as ScriptLineType
+  contentBlock.getData().get("scriptLineType") as ScriptLineType
 
 const roleDecorator: DraftDecorator = {
   strategy: (contentBlock, callback, contentState) => {
     if (getScriptLineType(contentBlock) !== ScriptLineType.REMARK) {
       return
     }
+
     contentBlock.findEntityRanges((charMetadata) => {
       const entityKey = charMetadata.getEntity()
       if (entityKey) {
@@ -157,7 +170,7 @@ const compositDecorator = new CompositeDecorator([roleDecorator])
 export const createEditorStateFromScript = (
   script: Script,
   rolesColors: Record<RoleType, string>,
-): EditorState => {
+): [EditorState, RolesEntityKeys] => {
   const { contentState: contentStateWithRoleEntities, roleEntityKeys } = createRoleEntities(
     script.rolesMeta,
     new ContentState(),
@@ -165,8 +178,120 @@ export const createEditorStateFromScript = (
   )
   const contentBlocks = createScriptLinesBlocks(script.lines, roleEntityKeys)
 
-  return EditorState.createWithContent(
+  const editorStateWithContent = EditorState.createWithContent(
     ContentState.createFromBlockArray(contentBlocks, contentStateWithRoleEntities.getEntityMap()),
     compositDecorator,
   )
+  return [editorStateWithContent, roleEntityKeys]
+}
+
+const getContentBlockScriptLineType = (contentBlock: ContentBlock): ScriptLineType | undefined => {
+  const blockData: Map<any, any> = contentBlock.getData()
+  const blockLineType = blockData.get("scriptLineType") as ScriptLineType | undefined
+  return blockLineType
+}
+
+const setContentBlockScriptLineType = (
+  contentState: ContentState,
+  contentBlockKey: string,
+  lineType: ScriptLineType,
+): ContentState => {
+  return Modifier.setBlockData(
+    contentState,
+    new SelectionState({
+      anchorKey: contentBlockKey,
+      anchorOffset: 0,
+      focusKey: contentBlockKey,
+      focusOffset: 0,
+    }),
+    Map({
+      scriptLineType: lineType,
+    }),
+  )
+}
+
+export const updateContentBlockEntities = (
+  editorState: EditorState,
+  rolesEntityKeys: RolesEntityKeys,
+): EditorState => {
+  console.log("last change type", editorState.getLastChangeType())
+  if (
+    [
+      EditorChangeType.insertCharacters,
+      EditorChangeType.backspaceCharacter,
+      EditorChangeType.deleteCharacters,
+      EditorChangeType.splitBlock,
+    ].includes(editorState.getLastChangeType() as EditorChangeType)
+  ) {
+    const existingRoles: RoleType[] = Object.keys(rolesEntityKeys)
+    const currContentState = editorState.getCurrentContent()
+    const selection: SelectionState = editorState.getSelection()
+    const currContentBlockKey = selection.getAnchorKey()
+    const currContentBlock = currContentState.getBlockForKey(currContentBlockKey)
+
+    const blockExistingScriptType = getContentBlockScriptLineType(currContentBlock)
+    const currBlockText = currContentBlock.getText()
+    const blockShouldBeScriptType = scriptLineHandling.checkLineTypeOfRawText(
+      currBlockText,
+      existingRoles,
+    )
+
+    // const newContentState = setContentBlockScriptLineType(
+    //   currContentState,
+    //   currContentBlockKey,
+    //   blockShouldBeScriptType,
+    // )
+    const newContentState = Modifier.setBlockData(
+      currContentState,
+      selection,
+      Map({
+        scriptLineType: blockShouldBeScriptType,
+      }),
+    )
+    console.log(
+      newContentState
+        .getBlocksAsArray()
+        .map((block) => [block.getKey(), block.getData().get("scriptLineType")]),
+    )
+
+    return EditorState.push(editorState, newContentState, EditorChangeType.changeBlockData)
+    //
+    // console.log(
+    //   "Edited block number: ",
+    //   currContentState.getBlocksAsArray().indexOf(currContentBlock),
+    // )
+    // console.log("selection", selection)
+    //
+    // if (blockExistingScriptType === blockShouldBeScriptType) {
+    //   return editorState
+    // }
+    // const blockAsScriptLine = scriptLineHandling.lineFromRawText(currBlockText, existingRoles)
+    // const replaceWithContentBlock = createScriptLineBlock(
+    //   blockAsScriptLine,
+    //   rolesEntityKeys,
+    //   genKey(),
+    // )
+    // const newContentBlocks = currContentState
+    //   .getBlocksAsArray()
+    //   .map((contentBlock) =>
+    //     contentBlock.getKey() === currContentBlockKey ? replaceWithContentBlock : contentBlock,
+    //   )
+    // console.log(newContentBlocks)
+    // const newContentState = ContentState.createFromBlockArray(newContentBlocks)
+    //
+    // const newEditorState = EditorState.push(
+    //   editorState,
+    //   newContentState,
+    //   EditorChangeType.changeBlockData,
+    // )
+    // // const newEditorStateWithSelection = EditorState.forceSelection(
+    // //   newEditorState,
+    // //   new SelectionState({
+    // //     anchorKey: selection.getAnchorKey(),
+    // //     anchorOffset: selection.getAnchorOffset(),
+    // //   }),
+    // // )
+    // return newEditorStateWithSelection
+  }
+  return editorState
 }
