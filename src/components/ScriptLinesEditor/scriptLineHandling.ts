@@ -3,7 +3,7 @@ import { Role as RoleType, ScriptLine, ScriptLineType } from "../../api/dataType
 export const lineActionPrefix = "*"
 export const lineRemarkRoleSeparator = ":"
 
-export const checkLineTypeOfRawText = (
+export const retrieveLineTypeOfRawText = (
   lineText: string,
   existingRoles: RoleType[],
 ): ScriptLineType => {
@@ -19,9 +19,13 @@ export const checkLineTypeOfRawText = (
   }
   return ScriptLineType.COMMENT
 }
+//
+// export const rawTextIsLineType = (
+//
+// )
 
 export const lineFromRawText = (rawText: string, existingRoles: RoleType[]): ScriptLine => {
-  const lineType = checkLineTypeOfRawText(rawText, existingRoles)
+  const lineType = retrieveLineTypeOfRawText(rawText, existingRoles)
   switch (lineType) {
     case ScriptLineType.REMARK:
       const [lineRole, restText] = rawText.split(lineRemarkRoleSeparator, 2)

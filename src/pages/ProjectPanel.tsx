@@ -5,6 +5,7 @@ import { fetchProjects } from "../api/endpoints"
 import { RouteComponentProps } from "react-router-dom"
 import ScriptList from "../components/ScriptList"
 import ScriptView from "../components/ScriptView"
+import ScriptLinesEditor from "../components/ScriptLinesEditor"
 import ScriptEditor from "../components/ScriptEditor"
 
 type RouterParams = {

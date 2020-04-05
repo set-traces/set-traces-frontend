@@ -1,33 +1,16 @@
-import React, { useState } from "react"
-import {
-  Role as RoleType,
-  RoleMeta,
-  Script,
-  ScriptLineRemark,
-  ScriptLineType,
-} from "../../api/dataTypes"
-import { BackgroundPaper, Wrapper, ScriptHeader, Role } from "./elements"
-import Draft, {
-  CompositeDecorator,
-  ContentState,
-  DraftDecorator,
-  Editor,
-  EditorState,
-  ContentBlock,
-  genKey,
-  DraftEntityMutability,
-  CharacterMetadata,
-} from "draft-js"
-import styled from "styled-components"
+import React, { useEffect, useState } from "react"
+import { Role as RoleType, Script, ScriptLine } from "../../api/dataTypes"
+import { BackgroundPaper, ScriptHeader, Wrapper } from "./elements"
 import { theme } from "../../Theme"
-import { createArrayOfRange } from "../../utils/arrayUtils"
-import {
-  createEditorStateFromScript,
-  createRoleEntities,
-  createScriptLinesBlocks,
-  RolesEntityKeys,
-  updateContentBlockEntities,
-} from "./contentModification"
+import ScriptLinesEditor from "../ScriptLinesEditor"
+
+export type ScriptLineChangeCallback = (
+  lineIndex: number,
+  line: ScriptLine,
+  prevLine: ScriptLine,
+) => void
+export type ScriptLineAddCallback = (lineIndex: number, line: ScriptLine) => void
+export type ScriptLineRemoveCallback = (lineIndex: number, prevLine: ScriptLine) => void
 
 type Props = {
   className?: string
@@ -44,33 +27,25 @@ const ROLES_COLORS = [
 ]
 
 const ScriptEditor: React.FC<Props> = ({ className, script }) => {
-  const rolesColors: Record<RoleType, string> = {}
-  script.rolesMeta.forEach((roleMeta, i) => {
-    rolesColors[roleMeta.role] = ROLES_COLORS[i % ROLES_COLORS.length]
-  })
+  const [rolesColors, setRolesColors] = useState<Record<RoleType, string> | undefined>(undefined)
 
-  const [initialEditorState, initialRolesEntityKeys] = createEditorStateFromScript(
-    script,
-    rolesColors,
-  )
-  const [editorState, setEditorState] = useState<EditorState>(initialEditorState)
-  const [rolesEntityKeys, setRolesEntityKeys] = useState<RolesEntityKeys>(initialRolesEntityKeys)
-
-  const handleEditorChange = (editorState: EditorState) => {
-    const editorStateWithNewEntities = updateContentBlockEntities(editorState, rolesEntityKeys)
-    setEditorState(editorStateWithNewEntities)
-  }
-
-  // const customBlockRenderer = (contentBlock: ContentBlock) => {
-  //   const lineType =
-  // }
+  useEffect(() => {
+    const rolesColors: Record<RoleType, string> = {}
+    script.rolesMeta.forEach((roleMeta, i) => {
+      rolesColors[roleMeta.role] = ROLES_COLORS[i % ROLES_COLORS.length]
+    })
+    setRolesColors(rolesColors)
+  }, [script])
 
   return (
     <Wrapper className={className}>
       <BackgroundPaper>
-        <ScriptHeader script={script} rolesColors={rolesColors} />
-
-        <Editor editorState={editorState} onChange={handleEditorChange} />
+        {rolesColors && (
+          <>
+            <ScriptHeader script={script} rolesColors={rolesColors} />
+            <ScriptLinesEditor initialScript={script} rolesColors={rolesColors} editable={true} />
+          </>
+        )}
       </BackgroundPaper>
     </Wrapper>
   )

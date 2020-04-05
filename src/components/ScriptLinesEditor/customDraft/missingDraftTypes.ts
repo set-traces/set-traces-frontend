@@ -1,5 +1,5 @@
 import { ContentState, DraftInlineStyle } from "draft-js"
-import { ReactNode } from "react"
+import { ReactElement, ReactNode } from "react"
 
 export interface CharacterMetadataConfig {
   style?: DraftInlineStyle
@@ -7,8 +7,8 @@ export interface CharacterMetadataConfig {
 }
 
 export type DraftDecoratorComponentProps = {
-  blockKey: any
-  children?: any //Array<ReactNode>
+  blockKey: string
+  children?: ReactElement[] //Array<ReactNode>
   contentState: ContentState
   decoratedText: string
   dir?: any //HTMLDir,

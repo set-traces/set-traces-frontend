@@ -1,7 +1,7 @@
 import styled from "styled-components"
 import React from "react"
 import { Role as RoleType, Script } from "../../api/dataTypes"
-import { DraftDecoratorComponentProps } from "./missingDraftTypes"
+import { DraftDecoratorComponentProps } from "../ScriptLinesEditor/customDraft/missingDraftTypes"
 
 export const Wrapper = styled.div`
   //width: 100%;
@@ -49,7 +49,11 @@ export const InlineRole = styled.span<DraftDecoratorComponentProps>`
   border-radius: 3px;
 `
 
-// export const RemarkLine: React.FC<RemarkLineProps> = () => {}
+export const InlineComment = styled.span<DraftDecoratorComponentProps>`
+  color: #000000b3;
+  padding: 2px;
+  border-radius: 3px;
+`
 
 export const Role = styled.span<{ color: string }>`
   //border-bottom: 2px solid ${(props) => props.color};
