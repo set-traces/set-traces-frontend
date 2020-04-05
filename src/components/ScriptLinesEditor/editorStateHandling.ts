@@ -1,9 +1,8 @@
-import { EditorState, ContentBlock, genKey, ContentState } from "draft-js"
-import { Role, Script, ScriptLine } from "../../api/dataTypes"
+import { ContentState, EditorState } from "draft-js"
+import { Role, ScriptLine } from "../../api/dataTypes"
 import { createBlocksFromScriptLines } from "./scriptLineBlockConversion"
 import {
   addScriptMetaEntity,
-  addScriptMetaEntityAndSetInBlocks,
   getScriptMetaEntityData,
   setScriptLineOfBlock,
 } from "./customDraft/customDraftUtils"

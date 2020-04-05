@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react"
 import { Role as RoleType, Script, ScriptLine } from "../../api/dataTypes"
 import { Editor, EditorState } from "draft-js"
 import { createEditorState, updateChangedEditorState } from "./editorStateHandling"
+import styled from "styled-components"
+import "./draftStyles.css"
 
 export type ScriptLineChangeCallback = (
   lineIndex: number,
@@ -20,6 +22,10 @@ type Props = {
   onLineAdd?: ScriptLineAddCallback
   onLineRemove?: ScriptLineRemoveCallback
 }
+
+const Wrapper = styled.span`
+  //line-height: 1.5;
+`
 
 const ScriptLinesEditor: React.FC<Props> = ({
   className,
@@ -49,13 +55,13 @@ const ScriptLinesEditor: React.FC<Props> = ({
   }
 
   return (
-    <span className={className}>
+    <Wrapper className={className}>
       {editorState && scriptMetaEntityKey ? (
         <Editor editorState={editorState} onChange={handleEditorChange} readOnly={!editable} />
       ) : (
         <span>Two sec...</span>
       )}
-    </span>
+    </Wrapper>
   )
 }
 
