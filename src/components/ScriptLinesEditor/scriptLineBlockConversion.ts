@@ -15,7 +15,7 @@ const createRemarkBlock = (
   blockKey?: string,
 ): ContentBlock => {
   return createScriptLineBlock(
-    scriptLine.role + lineRemarkRoleSeparator + " " + scriptLine.text,
+    scriptLine.role + lineRemarkRoleSeparator + scriptLine.text,
     {
       scriptLine,
       scriptMetaEntityKey,

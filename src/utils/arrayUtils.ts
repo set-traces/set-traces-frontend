@@ -7,3 +7,5 @@ export const createArrayOfRange = <T>(
   size: number,
   startAt?: number,
 ): T[] => range(size, startAt).map((i) => generator(i))
+
+export const zip = (rows: any[][]): any[][] => rows[0].map((_, c) => rows.map((row) => row[c]))

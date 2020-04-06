@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react"
-import { Role as RoleType, Script, ScriptLine } from "../../api/dataTypes"
+import { Role as RoleType, Script, ScriptLine, ScriptLineType } from "../../api/dataTypes"
 import { BackgroundPaper, ScriptHeader, Wrapper } from "./elements"
 import { theme } from "../../Theme"
-import ScriptLinesEditor from "../ScriptLinesEditor"
+import ScriptLinesEditor, { ScriptLineDelta } from "../ScriptLinesEditor"
+import { EditableScriptLinesState } from "../ScriptLinesEditor/editableScriptLinesState"
 
 export type ScriptLineChangeCallback = (
   lineIndex: number,
@@ -28,6 +29,9 @@ const ROLES_COLORS = [
 
 const ScriptEditor: React.FC<Props> = ({ className, script }) => {
   const [rolesColors, setRolesColors] = useState<Record<RoleType, string> | undefined>(undefined)
+  const [scriptLineState, setScriptLineState] = useState<EditableScriptLinesState | undefined>(
+    undefined,
+  )
 
   useEffect(() => {
     const rolesColors: Record<RoleType, string> = {}
@@ -35,15 +39,38 @@ const ScriptEditor: React.FC<Props> = ({ className, script }) => {
       rolesColors[roleMeta.role] = ROLES_COLORS[i % ROLES_COLORS.length]
     })
     setRolesColors(rolesColors)
+    setScriptLineState(EditableScriptLinesState.createFromScriptLines(script.lines, rolesColors))
   }, [script])
+
+  const handleScriptLinesChange = (
+    scriptLinesState: EditableScriptLinesState,
+    deltas: ScriptLineDelta[],
+  ) => {
+    console.log("Deltas:", deltas)
+    setScriptLineState(
+      scriptLinesState,
+      // scriptLinesState.modifyScriptLine(
+      //   {
+      //     type: ScriptLineType.ACTION,
+      //     roles: [],
+      //     text: "PRRRRRRRA",
+      //   },
+      //   3,
+      // ),
+    )
+  }
 
   return (
     <Wrapper className={className}>
       <BackgroundPaper>
-        {rolesColors && (
+        {rolesColors && scriptLineState && (
           <>
             <ScriptHeader script={script} rolesColors={rolesColors} />
-            <ScriptLinesEditor initialScript={script} rolesColors={rolesColors} editable={true} />
+            <ScriptLinesEditor
+              scriptLinesState={scriptLineState}
+              onChange={handleScriptLinesChange}
+              editable={true}
+            />
           </>
         )}
       </BackgroundPaper>

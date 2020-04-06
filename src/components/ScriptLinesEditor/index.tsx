@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react"
-import { Role as RoleType, Script, ScriptLine } from "../../api/dataTypes"
+import { Role as RoleType, ScriptLine } from "../../api/dataTypes"
 import { Editor, EditorState } from "draft-js"
 import { createEditorState, updateChangedEditorState } from "./editorStateHandling"
 import styled from "styled-components"
 import "./draftStyles.css"
+import { EditableScriptLinesState } from "./editableScriptLinesState"
 
 export type ScriptLineChangeCallback = (
   lineIndex: number,
@@ -13,11 +14,36 @@ export type ScriptLineChangeCallback = (
 export type ScriptLineAddCallback = (lineIndex: number, line: ScriptLine) => void
 export type ScriptLineRemoveCallback = (lineIndex: number, prevLine: ScriptLine) => void
 
+export enum ScriptLineDeltaType {
+  ADD = "ADD",
+  REMOVE = "REMOVE",
+  MODIFY = "MODIFY",
+}
+export type ScriptLineAddDelta = {
+  type: typeof ScriptLineDeltaType.ADD
+  lineIndex: number
+  scriptLine: ScriptLine
+}
+export type ScriptLineRemoveDelta = {
+  type: typeof ScriptLineDeltaType.REMOVE
+  lineIndex: number
+  scriptLine: ScriptLine
+}
+
+export type ScriptLineModifyDelta = {
+  type: typeof ScriptLineDeltaType.MODIFY
+  lineIndex: number
+  scriptLine: ScriptLine
+  cursorPos: number
+}
+
+export type ScriptLineDelta = ScriptLineAddDelta | ScriptLineRemoveDelta | ScriptLineModifyDelta
+
 type Props = {
   className?: string
-  initialScript: Script
-  rolesColors: Record<RoleType, string>
+  scriptLinesState: EditableScriptLinesState
   editable?: boolean
+  onChange?: (scriptLinesState: EditableScriptLinesState, deltas: ScriptLineDelta[]) => void
   onLineChange?: ScriptLineChangeCallback
   onLineAdd?: ScriptLineAddCallback
   onLineRemove?: ScriptLineRemoveCallback
@@ -29,35 +55,44 @@ const Wrapper = styled.span`
 
 const ScriptLinesEditor: React.FC<Props> = ({
   className,
-  initialScript,
-  rolesColors,
+  scriptLinesState,
   editable = true,
+  onChange,
 }) => {
-  const [editorState, setEditorState] = useState<EditorState | undefined>(undefined)
-  const [scriptMetaEntityKey, setScriptMetaEntityKey] = useState<string | undefined>(undefined)
+  // const [scriptLinesState, setScriptLinesState] = useState<EditableScriptLinesState | undefined>(undefined)
+  // const [scriptMetaEntityKey, setScriptMetaEntityKey] = useState<string | undefined>(undefined)
 
-  useEffect(() => {
-    const { editorState: initialEditorState, scriptMetaEntityKey } = createEditorState(
-      initialScript.lines,
-      rolesColors,
-    )
-    setScriptMetaEntityKey(scriptMetaEntityKey)
-    setEditorState(initialEditorState)
-
-    // rolesColors change should be handled by updating the scriptMetaEntity, dont include in dependency list now
-  }, [initialScript])
+  // useEffect(() => {
+  //   const { editorState: initialEditorState, scriptMetaEntityKey } = createEditorState(
+  //     scriptLines,
+  //     rolesColors,
+  //   )
+  //   setScriptMetaEntityKey(scriptMetaEntityKey)
+  //   setEditorState(initialEditorState)
+  //
+  //   // rolesColors change should be handled by updating the scriptMetaEntity, dont include in dependency list now
+  // }, [])
 
   const handleEditorChange = (editorState: EditorState) => {
-    if (scriptMetaEntityKey) {
-      const modifiedEditorState = updateChangedEditorState(editorState, scriptMetaEntityKey)
-      setEditorState(modifiedEditorState)
+    const changedScriptLinesState = new EditableScriptLinesState(
+      editorState,
+      scriptLinesState.scriptMetaEntityKey,
+    )
+    const [modifiedScriptLinesState, deltas] = updateChangedEditorState(changedScriptLinesState)
+    // if deltas are not null, a change have been made
+    if (deltas) {
+      onChange && onChange(modifiedScriptLinesState, deltas)
     }
   }
 
   return (
     <Wrapper className={className}>
-      {editorState && scriptMetaEntityKey ? (
-        <Editor editorState={editorState} onChange={handleEditorChange} readOnly={!editable} />
+      {scriptLinesState ? (
+        <Editor
+          editorState={scriptLinesState.editorState}
+          onChange={handleEditorChange}
+          readOnly={!editable}
+        />
       ) : (
         <span>Two sec...</span>
       )}
