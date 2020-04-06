@@ -4,6 +4,7 @@ import { BackgroundPaper, ScriptHeader, Wrapper } from "./elements"
 import { theme } from "../../Theme"
 import ScriptLinesEditor, { ScriptLineDelta } from "../ScriptLinesEditor"
 import { EditableScriptLinesState } from "../ScriptLinesEditor/editableScriptLinesState"
+import useRemoteScriptUpdate from "./useRemoteScriptUpdate"
 
 export type ScriptLineChangeCallback = (
   lineIndex: number,
@@ -42,22 +43,29 @@ const ScriptEditor: React.FC<Props> = ({ className, script }) => {
     setScriptLineState(EditableScriptLinesState.createFromScriptLines(script.lines, rolesColors))
   }, [script])
 
+  useRemoteScriptUpdate(scriptLineState, setScriptLineState)
+
   const handleScriptLinesChange = (
     scriptLinesState: EditableScriptLinesState,
     deltas: ScriptLineDelta[],
   ) => {
     console.log("Deltas:", deltas)
-    setScriptLineState(
-      scriptLinesState,
-      // scriptLinesState.modifyScriptLine(
-      //   {
-      //     type: ScriptLineType.ACTION,
-      //     roles: [],
-      //     text: "PRRRRRRRA",
-      //   },
-      //   3,
-      // ),
-    )
+    const insertRandom = Math.random() < 0.2
+    if (insertRandom) {
+      const lineIndex = Math.floor(Math.random() * scriptLinesState.getLinesCount())
+      setScriptLineState(
+        scriptLinesState.modifyScriptLine(
+          {
+            type: ScriptLineType.ACTION,
+            roles: [],
+            text: "PRRRRRRRA",
+          },
+          0,
+        ),
+      )
+    } else {
+      setScriptLineState(scriptLinesState)
+    }
   }
 
   return (

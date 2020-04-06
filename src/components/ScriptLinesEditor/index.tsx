@@ -34,7 +34,6 @@ export type ScriptLineModifyDelta = {
   type: typeof ScriptLineDeltaType.MODIFY
   lineIndex: number
   scriptLine: ScriptLine
-  cursorPos: number
 }
 
 export type ScriptLineDelta = ScriptLineAddDelta | ScriptLineRemoveDelta | ScriptLineModifyDelta

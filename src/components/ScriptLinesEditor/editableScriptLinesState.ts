@@ -3,6 +3,7 @@ import { Role, ScriptLine } from "../../api/dataTypes"
 import { createEditorState } from "./editorStateHandling"
 import * as editorStateHandling from "./editorStateHandling"
 import { EditorChangeType } from "./customDraft/missingDraftEnums"
+import { getScriptLineBlockData } from "./customDraft/customDraftUtils"
 
 // export type EditableScriptLineState = {
 //   editorState: EditorState,
@@ -37,6 +38,15 @@ export class EditableScriptLinesState {
   //   new EditableScriptLinesState(addScriptLine(this.editorState, scriptLine, index))
   //
   // removeScriptLine: (index: number) => EditableScriptLinesState
+
+  public getAllLines = (): ScriptLine[] =>
+    this.editorState
+      .getCurrentContent()
+      .getBlocksAsArray()
+      .map((block) => getScriptLineBlockData(block).scriptLine)
+
+  public getLinesCount = (): number =>
+    this.editorState.getCurrentContent().getBlocksAsArray().length
 
   public modifyScriptLine = (
     newScriptLine: ScriptLine,

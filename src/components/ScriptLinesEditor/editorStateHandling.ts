@@ -1,4 +1,4 @@
-import { ContentState, EditorState, SelectionState } from "draft-js"
+import Draft, { ContentState, EditorState, SelectionState, Modifier } from "draft-js"
 import { Role, ScriptLine } from "../../api/dataTypes"
 import { createBlockFromScriptLine, createBlocksFromScriptLines } from "./scriptLineBlockConversion"
 import {
@@ -11,6 +11,7 @@ import { lineFromRawText } from "./scriptLineHandling"
 import { EditorChangeType } from "./customDraft/missingDraftEnums"
 import { ScriptLineDelta, ScriptLineDeltaType } from "./index"
 import { EditableScriptLinesState } from "./editableScriptLinesState"
+import { OrderedMap } from "immutable"
 
 export const createEditorState = (
   scriptLines: ScriptLine[],
@@ -64,7 +65,6 @@ export const updateChangedEditorState = (
         type: ScriptLineDeltaType.MODIFY,
         lineIndex: contentBlockIndex,
         scriptLine: newScriptLine,
-        cursorPos: selectionState.getAnchorOffset(),
       },
     ]
     const currBlockIndex = contentState.getBlocksAsArray().indexOf(contentBlock)
@@ -95,29 +95,69 @@ export const modifyScriptLine = (
   scriptMetaEntityKey: string,
   changeType: EditorChangeType = EditorChangeType.insertCharacters,
 ): EditorState => {
-  console.log("last change type", editorState.getLastChangeType())
-  const existingContentState = editorState.getCurrentContent()
-  const existingBlocks = existingContentState.getBlocksAsArray()
-  const existingBlockToBeModified = existingBlocks[index]
+  const currContentState = editorState.getCurrentContent()
+  const blockAtIndex = currContentState.getBlocksAsArray()[index]
   const newBlock = createBlockFromScriptLine(
     newScriptLine,
     scriptMetaEntityKey,
-    existingBlockToBeModified.getKey(),
+    blockAtIndex.getKey(),
   )
-  const newBlocks = existingBlocks.map((block) =>
-    block === existingBlockToBeModified ? newBlock : block,
+  const newContentFragment = OrderedMap({ [newBlock.getKey()]: newBlock })
+  const newContentState = Modifier.replaceWithFragment(
+    currContentState,
+    new SelectionState({
+      anchorKey: blockAtIndex.getKey(),
+      focusKey: blockAtIndex.getKey(),
+      anchorOffset: 0,
+      focusOffset: blockAtIndex.getLength(),
+    }),
+    newContentFragment,
   )
-  const newContentState = ContentState.createFromBlockArray(newBlocks)
+
   const newEditorState = EditorState.push(
     editorState,
     newContentState,
-    newBlock.getText() === existingBlockToBeModified.getText()
-      ? EditorChangeType.changeBlockData
-      : changeType,
+    EditorChangeType.insertFragment,
   )
-  const newSelection = existingContentState.getSelectionAfter() //new SelectionState(editorState.getSelection().merge({}))
-  console.log("new selection", newSelection)
-  return EditorState.forceSelection(newEditorState, editorState.getSelection())
+  const prevSelection = editorState.getSelection()
+
+  // move the cursor to the end of the line if the new line is shorter. By default the cursor is put at the start
+  const newAnchorOffset =
+    prevSelection.getAnchorKey() === blockAtIndex.getKey()
+      ? Math.min(newBlock.getLength(), prevSelection.getAnchorOffset())
+      : prevSelection.getAnchorOffset()
+  const newFocusOffset =
+    prevSelection.getFocusKey() === blockAtIndex.getKey()
+      ? Math.min(newBlock.getLength(), prevSelection.getFocusOffset())
+      : prevSelection.getFocusOffset()
+  const newSelection = new SelectionState(
+    prevSelection.merge({ anchorOffset: newAnchorOffset, focusOffset: newFocusOffset }),
+  )
+  return EditorState.forceSelection(newEditorState, newSelection)
+  // console.log("last change type", editorState.getLastChangeType())
+  // const existingContentState = editorState.getCurrentContent()
+  // const existingBlocks = existingContentState.getBlocksAsArray()
+  // const existingBlockToBeModified = existingBlocks[index]
+  // const newBlock = createBlockFromScriptLine(
+  //   newScriptLine,
+  //   scriptMetaEntityKey,
+  //   existingBlockToBeModified.getKey(),
+  // )
+  // const newBlocks = existingBlocks.map((block) =>
+  //   block === existingBlockToBeModified ? newBlock : block,
+  // )
+  // const newContentState = ContentState.createFromBlockArray(newBlocks)
+  // const newEditorState = EditorState.push(
+  //   editorState,
+  //   newContentState,
+  //   EditorChangeType.insertFragment,
+  //   // newBlock.getText() === existingBlockToBeModified.getText()
+  //   //   ? EditorChangeType.changeBlockData
+  //   //   : changeType,
+  // )
+  // const newSelection = existingContentState.getSelectionAfter() //new SelectionState(editorState.getSelection().merge({}))
+  // console.log("new selection", newSelection)
+  // return EditorState.forceSelection(newEditorState, editorState.getSelection())
 }
 
 const addScriptLine = (
