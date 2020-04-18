@@ -13,6 +13,7 @@ export type ScriptLineAddCallback = (lineIndex: number, line: ScriptLine) => voi
 export type ScriptLineRemoveCallback = (lineIndex: number, prevLine: ScriptLine) => void
 
 type Props = {
+  projectId: string
   className?: string
   script: Script
 }
@@ -26,7 +27,7 @@ const ROLES_COLORS = [
   theme.colors.highlight + COLOR_ALPHA,
 ]
 
-const ScriptEditor: React.FC<Props> = ({ className, script }) => {
+const ScriptEditor: React.FC<Props> = ({ projectId, className, script }) => {
   const [rolesColors, setRolesColors] = useState<Record<RoleType, string> | undefined>(undefined)
 
   useEffect(() => {
@@ -42,7 +43,7 @@ const ScriptEditor: React.FC<Props> = ({ className, script }) => {
       <BackgroundPaper>
         {rolesColors && (
           <>
-            <ScriptHeader script={script} rolesColors={rolesColors} />
+            <ScriptHeader projectId={projectId} script={script} rolesColors={rolesColors} />
             <ScriptLinesEditor initialScript={script} rolesColors={rolesColors} editable={true} />
           </>
         )}

@@ -1,7 +1,9 @@
 import styled from "styled-components"
-import React from "react"
+import React, { useState } from "react"
+import { useWindowEvent } from "../../hooks/windowCallbacks"
 import { Role as RoleType, Script } from "../../api/dataTypes"
 import { DraftDecoratorComponentProps } from "../ScriptLinesEditor/customDraft/missingDraftTypes"
+import { saveScriptName, saveScriptDescription } from "../../api/endpoints"
 
 export const Wrapper = styled.div`
   //width: 100%;
@@ -67,15 +69,88 @@ const RolesMetaRole = styled(Role)`
   margin: 5px;
 `
 
+const TitleInput = styled.input`
+  display: block;
+  width: 100%;
+  position: relative;
+  top: -3px;
+  left: -3px;
+  color: ${(props) => props.theme.colors.undertone};
+  margin-top: 0;
+  margin-bottom: 32px;
+  font-size: 2em;
+  font-weight: bold;
+  border-radius: 5px;
+  border: 2px solid ${(props) => props.theme.colors.undertone};
+  outline: none;
+  font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+  margin-bottom: 26px;
+`
+
+const ScriptTitle = (props: any) => {
+  if (!props.edit) {
+    return <Title onClick={props.changeToEditTitle}>{props.name}</Title>
+  } else {
+    return <TitleInput autoFocus value={props.name} onChange={props.onChange} />
+  }
+}
+
 type ScriptHeaderProps = {
+  projectId: string
   script: Script
   rolesColors: Record<RoleType, string>
 }
 
-export const ScriptHeader: React.FC<ScriptHeaderProps> = ({ script, rolesColors }) => {
+export const ScriptHeader: React.FC<ScriptHeaderProps> = ({ projectId, script, rolesColors }) => {
+  const [editName, setEditName] = useState<boolean>(false)
+  const [editDesc, setEditDesc] = useState<boolean>(false)
+  const [desc, setDesc] = useState<string>(script.description)
+  const [name, setName] = useState<string>(script.name)
+
+  const saveName = () => {
+    saveScriptName(projectId, script.id, name)
+    console.log("saving name")
+  }
+
+  const saveDesc = () => {
+    saveScriptDescription(projectId, script.id, desc)
+    console.log("saving desc")
+  }
+
+  const changeToEditTitle = () => {
+    console.log("called here")
+    setEditName(true)
+  }
+
+  useWindowEvent(
+    "keydown",
+    (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        if (editName) {
+          // handle for edit title
+          saveName()
+          setEditName(false)
+        }
+        if (editDesc) {
+          saveDesc()
+          setEditDesc(false)
+        }
+      }
+    },
+    [],
+  )
+
   return (
     <span>
-      <Title>{script.name}</Title>
+      <ScriptTitle
+        changeToEditTitle={changeToEditTitle}
+        name={name}
+        onChange={(e: any) => {
+          setName(e.target.value)
+        }}
+        edit={editName}
+        setEditName={setEditName}
+      />
       <RolesMetaRole color={"#00000000"}>
         <strong>Context:</strong>
       </RolesMetaRole>

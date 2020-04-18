@@ -188,7 +188,7 @@ const ProjectPanel: React.FC<Props> = ({ history, match }) => {
         </div>
         {viewScript && (
           <ScriptViewWrapper>
-            <StyledScriptEditor script={viewScript} />
+            <StyledScriptEditor projectId={projectId} script={viewScript} />
           </ScriptViewWrapper>
         )}
         {project && (
