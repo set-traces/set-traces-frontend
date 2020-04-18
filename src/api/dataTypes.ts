@@ -46,4 +46,5 @@ export type Project = {
   name: string
   description: string
   scripts: Script[]
+  scriptTypes: any
 }
