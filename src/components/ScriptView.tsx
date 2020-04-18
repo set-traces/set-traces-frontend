@@ -136,6 +136,7 @@ const ScriptView: React.FC<Props> = ({ className, projectId, script }) => {
   }
 
   const changeToEditTitle = () => {
+    console.log('called here')
     setEditName(true)
   }
 
@@ -191,7 +192,15 @@ const ScriptView: React.FC<Props> = ({ className, projectId, script }) => {
 
   const contentElem = (
     <span>
-      <Title>{script.name}</Title>
+    <ScriptTitle
+    changeToEditTitle={changeToEditTitle}
+    name={name}
+    onChange={(e: any) => {
+      setName(e.target.value)
+    }}
+    edit={editName}
+    setEditName={setEditName}
+    />
       <RolesMetaRole color={"#00000000"}>
         <strong>Context:</strong>
       </RolesMetaRole>
