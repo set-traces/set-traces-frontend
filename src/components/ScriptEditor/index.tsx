@@ -43,7 +43,7 @@ const ScriptEditor: React.FC<Props> = ({ projectId, className, script }) => {
       <BackgroundPaper>
         {rolesColors && (
           <>
-            <ScriptHeader projectId={projectId} script={script} rolesColors={rolesColors} />
+            <ScriptHeader key={script.id} projectId={projectId} script={script} rolesColors={rolesColors} />
             <ScriptLinesEditor initialScript={script} rolesColors={rolesColors} editable={true} />
           </>
         )}

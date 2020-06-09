@@ -1,5 +1,5 @@
 import styled from "styled-components"
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useWindowEvent } from "../../hooks/windowCallbacks"
 import { Role as RoleType, Script } from "../../api/dataTypes"
 import { DraftDecoratorComponentProps } from "../ScriptLinesEditor/customDraft/missingDraftTypes"
@@ -95,6 +95,15 @@ const ScriptTitle = (props: any) => {
   }
 }
 
+
+const ScriptDescription = (props: any) => {
+  if (!props.edit) {
+    return <Description onClick={() => {props.setEditDesc(true)}}>{props.description}</Description>
+  } else {
+    return <textarea autoFocus style={{width: '100%', height: '100px'}} value={props.description} onChange={props.onChange} />
+  }
+}
+
 type ScriptHeaderProps = {
   projectId: string
   script: Script
@@ -102,6 +111,8 @@ type ScriptHeaderProps = {
 }
 
 export const ScriptHeader: React.FC<ScriptHeaderProps> = ({ projectId, script, rolesColors }) => {
+
+
   const [editName, setEditName] = useState<boolean>(false)
   const [editDesc, setEditDesc] = useState<boolean>(false)
   const [desc, setDesc] = useState<string>(script.description)
@@ -154,7 +165,7 @@ export const ScriptHeader: React.FC<ScriptHeaderProps> = ({ projectId, script, r
       <RolesMetaRole color={"#00000000"}>
         <strong>Context:</strong>
       </RolesMetaRole>
-      <Description>{script.description}</Description>
+      <ScriptDescription onChange={(e: any) => {setDesc(e.target.value)}} description={desc} edit={editDesc} setEditDesc={setEditDesc}/>
       <RolesMetaContainer>
         <RolesMetaRole color={"#00000000"}>
           <strong>Roles: </strong>
